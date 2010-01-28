@@ -1,0 +1,8 @@
+#ifndef TIMERDEF_H
+#define TIMERDEF_H
+
+#define LOGDATA_TIMER 1111
+#define DEPTH_TIMER 1112
+#define DEPTH_TIMER_INTERVAL 1000
+
+#endif
