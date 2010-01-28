@@ -1,0 +1,265 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (中国) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 4, 2\r\n"
+    "#pragma code_page(936)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\ELISTestServer.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.chs\\afxres.rc""          // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\ELISTestServer.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 55
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "关于 ELISTestServer"
+FONT 9, "宋体"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "ELISTestServer 1.0 版",IDC_STATIC,40,10,119,8,
+                    SS_NOPREFIX
+    LTEXT           "版权所有 (C) 2009",IDC_STATIC,40,25,119,8
+    DEFPUSHBUTTON   "确定",IDOK,178,7,50,14,WS_GROUP
+END
+
+IDD_ELISTESTSERVER_DIALOG DIALOGEX 0, 0, 470, 453
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "ELISTestServer"
+FONT 9, "宋体"
+BEGIN
+    CONTROL         "Tab1",IDC_ELISTESTSERVER_TAB,"SysTabControl32",0x0,17,
+                    217,434,201
+    PUSHBUTTON      "Ok",IDC_Ok,109,424,60,19
+    PUSHBUTTON      "Cancel",IDC_Cancel,294,423,60,19
+    LTEXT           "当前模式:",IDC_STATIC_MODE,29,27,42,18
+    LTEXT           "",IDC_STATIC_MODE_VALUE,79,26,107,18
+    LTEXT           "方向:",IDC_STATIC_DIRECTION,203,27,24,12
+    LTEXT           "",IDC_STATIC_DIRECTION_VALUE,235,26,41,13
+    LTEXT           "服务器端口设置:",IDC_STATIC_SERVER_PORT,25,134,66,13
+    EDITTEXT        IDC_EDIT_SERVER_PORT,101,130,68,19,ES_AUTOHSCROLL
+    PUSHBUTTON      "Set",IDC_BUTTON_SERVER_PORT,175,130,30,16
+    LTEXT           "服务器IP和端口:",IDC_STATIC_SERVER_IP_PORT,25,158,68,16
+    LTEXT           "客户端IP和端口:",IDC_STATIC_CLIENT_IP_PORT,26,183,66,16
+    LTEXT           "",IDC_STATIC_SERVER_IP_PORT_VALUE,104,158,96,16
+    LTEXT           "",IDC_STATIC_CLIENT_IP_PORT_VALUE,102,180,97,16
+    LTEXT           "数据缓冲区大小(M字节):",IDC_STATIC_DATA_BUFFER_SIZE,223,
+                    184,91,16
+    EDITTEXT        IDC_EDIT_DATA_BUFFER_SIZE,325,180,62,20,ES_AUTOHSCROLL
+    PUSHBUTTON      "Set",IDC_BUTTON_DATA_BUFFER_SIZE,393,182,30,16
+    LTEXT           "ACT数据文件目录:",IDC_STATIC_ACT_FOLDER,223,132,68,15
+    EDITTEXT        IDC_EDIT_ACT_FOLDER,305,126,106,19,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+    EDITTEXT        IDC_EDIT_CALVER_FOLDER,309,154,110,19,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+    LTEXT           "Cal/Ver数据文件目录:",IDC_STATIC_CALVER_FOLDER,223,158,
+                    81,16
+    PUSHBUTTON      "...",IDC_BUTTON_ACT_FOLDER,415,130,15,14
+    PUSHBUTTON      "...",IDC_BUTTON_CALVER_FOLDER,423,154,15,14
+    GROUPBOX        "网络连接",IDC_STATIC_CONNECT,17,114,197,95
+    GROUPBOX        "数据",IDC_STATIC_DATA,213,114,237,95
+    GROUPBOX        "参数显示",IDC_STATIC_SHOW_PARAM,17,8,433,100
+    LTEXT           "真实深度:",IDC_STATIC_TRUE_DEPTH_SHOW,29,53,64,16
+    LTEXT           "当前时间:",IDC_STATIC_CURRENT_TIME,202,79,39,14
+    LTEXT           "速度:",IDC_STATIC_SPEED_SHOW,203,52,54,16
+    LTEXT           "",IDC_STATIC_TRUE_DEPTH_SHOW_VALUE,101,53,85,16
+    LTEXT           "",IDC_STATIC_CURRENT_TIME_VALUE,252,80,90,13
+    LTEXT           "",IDC_STATIC_SPEED_SHOW_VALUE,262,51,63,16
+    CONTROL         "公制",IDC_RADIO_METRIC,"Button",BS_AUTORADIOBUTTON,392,
+                    27,32,10
+    CONTROL         "英制",IDC_RADIO_IMPERIAL,"Button",BS_AUTORADIOBUTTON,
+                    350,27,32,10
+    PUSHBUTTON      "开始log",IDC_BUTTON_CREATE_LOG,355,51,59,19,WS_DISABLED
+    PUSHBUTTON      "暂停log",IDC_BUTTON_STOP_LOG,355,79,59,19,WS_DISABLED
+    LTEXT           "校正深度:",IDC_STATIC_CORRECTED_DEPTH_SHOW,29,80,64,16
+    LTEXT           "",IDC_STATIC_CORRECTED_DEPTH_SHOW_VALUE,101,80,85,16
+END
+
+IDD_TAB_ACT DIALOG DISCARDABLE  0, 0, 575, 343
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List1",IDC_LIST_ACT,"SysListView32",LVS_REPORT | 
+                    LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,0,0,575,343
+END
+
+IDD_TAB_CALVER DIALOG DISCARDABLE  0, 0, 551, 407
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List1",IDC_LIST_CALVER,"SysListView32",LVS_REPORT | 
+                    WS_BORDER | WS_TABSTOP,0,0,551,407
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "ELISTestServer Microsoft 基础类应用程序\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "ELISTestServer\0"
+            VALUE "LegalCopyright", "版权所有 (C) 2009\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "ELISTestServer.EXE\0"
+            VALUE "ProductName", "ELISTestServer 应用程序\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_ELISTESTSERVER_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 17
+        RIGHTMARGIN, 463
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 448
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_ABOUTBOX            "关于 ELISTestServer(&A)..."
+    IDP_SOCKETS_INIT_FAILED "Windows 通信端口初始化失败。"
+END
+
+#endif    // Chinese (中国) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE 4, 2
+#pragma code_page(936)
+#endif //_WIN32
+#include "res\ELISTestServer.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.chs\afxres.rc"          // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
