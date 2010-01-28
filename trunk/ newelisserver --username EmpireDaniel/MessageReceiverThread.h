@@ -7,8 +7,11 @@
 // MessageReceiverThread.h : header file
 //
 
+#include "MySocket.h"
+#include "CommandHandlerThread.h"
 
-
+#define WM_PORT WM_USER
+#define WM_ACCEPT WM_USER
 /////////////////////////////////////////////////////////////////////////////
 // CMessageReceiverThread thread
 
@@ -20,10 +23,17 @@ protected:
 
 // Attributes
 public:
+	CCommandHandlerThread * m_pCmdHandlerThread;
+
+private:
+	UINT m_socketPort;
+	CMySocket m_listenSocket;
+	//CMySocket * m_pConnectSocket;
+	//UINT m_rcvStatus;
 
 // Operations
 public:
-
+	
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMessageReceiverThread)
@@ -39,6 +49,8 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CMessageReceiverThread)
 		// NOTE - the ClassWizard will add and remove member functions here.
+		afx_msg VOID OnPort(WPARAM wParam, LPARAM lParam);
+		afx_msg VOID OnSocketAccept(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

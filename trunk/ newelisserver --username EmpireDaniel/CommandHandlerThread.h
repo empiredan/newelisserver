@@ -7,7 +7,10 @@
 // CommandHandlerThread.h : header file
 //
 
-#define WM_COMMAND WM_USER+1
+#include "commands.h"
+#include "Data.h"
+
+#define WM_COMMAND_DATA WM_USER+1
 #define WM_DATABUF WM_USER+2
 #define WM_ACTROOT WM_USER+3
 #define WM_CALVERROOT WM_USER+4
@@ -48,7 +51,7 @@ public:
 
 // Implementation
 public:
-	void PreProcessMasterData(CMasterData *md);
+	inline void PreProcessMasterData(CMasterData *md);
 	void NetCmd_InitServiceTable();
 	void NetCmd_CalibPara();
 	void NetCmd_CalibStart();
