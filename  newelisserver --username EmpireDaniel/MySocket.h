@@ -8,6 +8,7 @@
 //
 
 #include "Data.h"
+#include "CommandHandlerThread.h"
 
 #define SOCK_RECEIVE_HEADER 0x0001
 #define SOCK_RECEIVE_BODY 0x0002
@@ -15,20 +16,23 @@
 /////////////////////////////////////////////////////////////////////////////
 // MySocket command target
 class CELISTestServerDlg;
-class MySocket : public CAsyncSocket
+class CMySocket : public CAsyncSocket
 {
 // Attributes
 public:
-
+	CCommandHandlerThread * m_pCmdHandlerThread;
+private:
+	CMySocket * m_pConnectSocket;
+	UINT m_rcvStatus;
 // Operations
 public:
-	MySocket();
-	virtual ~MySocket();
-
+	CMySocket();
+	virtual ~CMySocket();
+	
 // Overrides
 public:
-	void SetParent(CELISTestServerDlg* pDlg);
-	CELISTestServerDlg* m_pELISTestServerDlg;
+	//void SetParent(CELISTestServerDlg* pDlg);
+	//CELISTestServerDlg* m_pELISTestServerDlg;
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(MySocket)
 	public:
@@ -44,7 +48,7 @@ public:
 
 // Implementation
 protected:
-private:
+
 	
 };
 

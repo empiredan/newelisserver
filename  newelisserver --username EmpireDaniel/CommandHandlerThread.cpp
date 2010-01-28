@@ -5,8 +5,8 @@
 #include "elistestserver.h"
 #include "CommandHandlerThread.h"
 
-#include "commands.h"
-#include "Data.h"
+//#include "commands.h"
+//#include "Data.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,7 +42,7 @@ int CCommandHandlerThread::ExitInstance()
 BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	//{{AFX_MSG_MAP(CCommandHandlerThread)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
-		ON_THREAD_MESSAGE(WM_COMMAND, OnCommand)
+		ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -62,132 +62,144 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 
 		case NET_CMDTYPE_INIT_SERVICE_TABLE:
 			NetCmd_InitServiceTable();
-		break;
+			break;
 
 		case NET_CMDTYPE_INIT_CONFIG_PARAMETER:
 			NetCmd_InitConfigParameter();
-		break;
+			break;
 
 		case NET_CMDTYPE_CTRL_DEACTIVATE:
 			NetCmd_CtrlActDeactivate();
-		break;
+			break;
 
 		case NET_CMDTYPE_CTRL_WORK_STATE:
 			NetCmd_CtrlWorkState();
-		break;
+			break;
 
 		case NET_CMDTYPE_CTRL_STANDBYTIME_INTERVAL:
 			NetCmd_CtrlStandbytimeInterval();
-		break;
+			break;
 
 		case NET_CMDTYPE_CTRL_RECSTOP:
 			NetCmd_CtrlRecstop();
-		break;
+			break;
 
 		case NET_CMDTYPE_CTRL_ACTSWITCH:
 			NetCmd_CtrlACTSwitch();
-		break;
+			break;
 
 		//以下为刻度命令类型
 		case NET_CMDTYPE_CALIB_PARA:
 			NetCmd_CalibPara();
-		break;
+			break;
 
 		case NET_CMDTYPE_CALIB_START:
 			NetCmd_CalibStart();
-		break;
+			break;
 
 		case NET_CMDTYPE_CALIB_STOP:
 			NetCmd_CalibStop();
-		break;
+			break;
 
 		//单次控制命令
 		case NET_CMDTYPE_SNGL_CTLCMD:
 			NetCmd_SnglCtl();
-		break;
+			break;
 
 		//设置深度中断为内部或外部,
 		//命令长度：4个字节，命令：0为内部，1为外部中断
 		case NET_CMDTYPE_DEPTH_INTERNAL:
 			NetCmd_DepthInternal();
-		break;
+			break;
 
 		//内部方式下，设置方向,
 		//命令长度：4个字节，命令： 0为上，1为下
 		case NET_CMDTYPE_DEPTH_DIRECTION:
-			NetCmd_DepthDirection(d);
-		break;
-			//在内部方式下，设置速度
-			//命令长度：4个字节，命令：速度值
-			case NET_CMDTYPE_DEPTH_SPEED:
-				handler->NetCmd_DepthSpeed(d);
+			NetCmd_DepthDirection();
 			break;
-			//设置真实深度
-			//命令长度：4个字节，命令：深度值，DU数
-			case NET_CMDTYPE_DEPTH_TRUEDEPTH:
-				handler->NetCmd_TrueDepth(d);
+
+		//在内部方式下，设置速度
+		//命令长度：4个字节，命令：速度值
+		case NET_CMDTYPE_DEPTH_SPEED:
+			NetCmd_DepthSpeed();
 			break;
-			//设置深度
-			//命令长度：4个字节，命令：深度值，DU数
-			case NET_CMDTYPE_DEPTH_CORRECTEDDEPTH:
-				handler->NetCmd_CorrectedDepth(d);
+
+		//设置真实深度
+		//命令长度：4个字节，命令：深度值，DU数
+		case NET_CMDTYPE_DEPTH_TRUEDEPTH:
+			NetCmd_TrueDepth();
 			break;
-			//手动校正（加减）深度
-			//命令长度：8个字节，前4 byte为加减命令：0为减，1为加，
-			//后4 byte为公英制命令，0为英制， 1为公制
-			case NET_CMDTYPE_DEPTH_MANUALDEPTHCORR:
-				handler->NetCmd_ManualDepthCorrection(d);
+
+		//设置深度
+		//命令长度：4个字节，命令：深度值，DU数
+		case NET_CMDTYPE_DEPTH_CORRECTEDDEPTH:
+			NetCmd_CorrectedDepth();
 			break;
-			//自动校正（加减）深度
-			//命令长度：8个字节，前4 byte为控制命令：0为停止校正，1为开始校正，
-			//后4 byte为校正间隔
-			case NET_CMDTYPE_DEPTH_AUTODEPTHCORR:
-				handler->NetCmd_AutoDepthCorrection(d);
+
+		//手动校正（加减）深度
+		//命令长度：8个字节，前4 byte为加减命令：0为减，1为加，
+		//后4 byte为公英制命令，0为英制， 1为公制
+		case NET_CMDTYPE_DEPTH_MANUALDEPTHCORR:
+				NetCmd_ManualDepthCorrection();
 			break;
-			//深度板锁定
-			//命令长度：4个字节，命令：1
-			case NET_CMDTYPE_DEPTH_LOCK:
-				handler->NetCmd_DepthLock(d);
+
+		//自动校正（加减）深度
+		//命令长度：8个字节，前4 byte为控制命令：0为停止校正，1为开始校正，
+		//后4 byte为校正间隔
+		case NET_CMDTYPE_DEPTH_AUTODEPTHCORR:
+			NetCmd_AutoDepthCorrection();
 			break;
-			//深度板解锁
-			//命令长度：4个字节，命令：0
-			case NET_CMDTYPE_DEPTH_UNLOCK:
-				handler->NetCmd_DepthUnlock(d);
+
+		//深度板锁定
+		//命令长度：4个字节，命令：1
+		case NET_CMDTYPE_DEPTH_LOCK:
+			NetCmd_DepthLock();
 			break;
-			//通知发送张力因数
-			//命令长度：4个字节，命令：1
-			//返回：4个字节，高16位maxTension，低16位offsetTension，
-			//返回类型：NET_RETURN_DEPTHPANEL_READTENSIONFACTOR
-			case NET_CMDTYPE_DEPTH_TENSIONFACTOR:
-				handler->NetCmd_DepthTensionFactor(d);
+	
+		//深度板解锁
+		//命令长度：4个字节，命令：0
+		case NET_CMDTYPE_DEPTH_UNLOCK:
+			NetCmd_DepthUnlock();
 			break;
-			//通知发送张力角度
-			//命令长度：4个字节，命令：1
-			//返回：4个字节，张力角度，
-			//返回类型：NET_RETURN_DEPTHPANEL_READTENSIONANGLE
-			case NET_CMDTYPE_DEPTH_TENSIONANGLE:
-				handler->NetCmd_DepthTensionAngle(d);
+
+		//通知发送张力因数
+		//命令长度：4个字节，命令：1
+		//返回：4个字节，高16位maxTension，低16位offsetTension，
+		//返回类型：NET_RETURN_DEPTHPANEL_READTENSIONFACTOR
+		case NET_CMDTYPE_DEPTH_TENSIONFACTOR:
+			NetCmd_DepthTensionFactor();
 			break;
-			//通知发送CHT
-			//命令长度：4个字节，命令：CHT值
-			case NET_CMDTYPE_DEPTH_CHT:
-				handler->NetCmd_DepthCHT(d);
+
+		//通知发送张力角度
+		//命令长度：4个字节，命令：1
+		//返回：4个字节，张力角度，
+		//返回类型：NET_RETURN_DEPTHPANEL_READTENSIONANGLE
+		case NET_CMDTYPE_DEPTH_TENSIONANGLE:
+			NetCmd_DepthTensionAngle();
+			break;
+
+		//通知发送CHT
+		//命令长度：4个字节，命令：CHT值
+		case NET_CMDTYPE_DEPTH_CHT:
+			NetCmd_DepthCHT();
 			break;
 			
-			default:
-				char logdata[1024];
-				sprintf(logdata, "___UNKNOWN_COMMAND____:%lx\n",cmdtype);
-				handler->dlg->log.Write(logdata, strlen(logdata));
-				handler->dlg->log.Flush();
+		default:
+			/*
+			char logdata[1024];
+			sprintf(logdata, "___UNKNOWN_COMMAND____:%lx\n",cmdtype);
+			handler->dlg->log.Write(logdata, strlen(logdata));
+			handler->dlg->log.Flush();
+			*/
 			break;
-		}
+	}
 
 	delete mData;
 
 	
 }
 
-void CCommandHandlerThread::PreProcessMasterData(CMasterData *md)
+inline void CCommandHandlerThread::PreProcessMasterData(CMasterData *md)
 {
 	m_cmdType = md->GetCmdType();
 	m_totalLen = md->GetTotalLen();
