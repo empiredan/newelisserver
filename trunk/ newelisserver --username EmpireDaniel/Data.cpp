@@ -1,85 +1,35 @@
+// Data.cpp: implementation of the CData class.
+//
+//////////////////////////////////////////////////////////////////////
+
 #include "stdafx.h"
+#include "elistestserver.h"
 #include "Data.h"
 
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
 
-CData::CData() {
-	buf = new BUF_TYPE[DEFAULT_BUF_LEN];
-	buflen = DEFAULT_BUF_LEN;
-	pBuf = buf;
-	contentlen = 0;
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CData::CData()
+{
+
 }
 
-CData::CData(BUF_TYPE* bf, ULONG len) {
-	this->buf = NULL;
-	this->pBuf = NULL;
-	contentlen = 0;
-	buflen = 0;
+CData::~CData()
+{
 
-	if(len < DEFAULT_BUF_LEN) {
-		assureCapacity(DEFAULT_BUF_LEN);
-	}
-	setData(bf, len);
 }
-
-CData::~CData() {
-	if(buf != NULL) {
-		delete []buf;
-	}
-}
-
-void CData::assureCapacity(ULONG sizeNeeded) {
-	ULONG rem = buflen - contentlen;
-	BUF_TYPE *buft;
-	if(this->buf == NULL || rem < sizeNeeded) {
-		buft = new BUF_TYPE[contentlen + sizeNeeded];
-		ASSERT(buft != NULL);
-		this->buflen = contentlen + sizeNeeded;
-
-		if(this->buf != NULL) {
-			if(contentlen > 0) {
-				memcpy(buft, buf, contentlen);
-			}
-			delete []this->buf;
-		} else {//这不应该出现,contentlen必须已经是0
-			contentlen = 0;
-		}
-
-		this->buf = buft;
-		this->pBuf = (this->buf + contentlen);
-	}
-}
-
-void CData::setData(BUF_TYPE* bf, ULONG len) {
-	assureCapacity(len);
-	memcpy(this->pBuf, bf, len);
-	pBuf += len;
-	contentlen += len;
-
-	//ULONG *t, t0, t1;
-	//t = (ULONG*)this->buf;
-	//t0 = ntohl(t[0]);
-	//t1 = ntohl(t[1]);
-}
-
-void CData::setHeader(ULONG cmdType, ULONG cmdLen) {
-	ULONG *t;
-	
-	assureCapacity(SOCK_RECEIVE_HEADER_LEN);
-	
-	t = (ULONG*)pBuf;
-	t[0] = cmdType;
-	t[1] = cmdLen;
-
-	pBuf += SOCK_RECEIVE_HEADER_LEN;
-	contentlen += SOCK_RECEIVE_HEADER_LEN;
-}
-
 
 //CMasterData----------------
 CMasterData::CMasterData():CData() {
 }
-CMasterData::CMasterData(BUF_TYPE* bf, ULONG len):CData(bf, len) {
-}
+
 CMasterData::CMasterData(ULONG cmdtype, ULONG totallen, ULONG headlen, BUF_TYPE * bodybuf, ULONG bodylen)
 {
 	m_cmdType = cmdtype;
