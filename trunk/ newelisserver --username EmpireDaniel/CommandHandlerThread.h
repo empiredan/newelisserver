@@ -85,8 +85,8 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CCommandHandlerThread)
-		// NOTE - the ClassWizard will add and remove member functions here.
 	afx_msg VOID OnCommand(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnTimer(UINT nIDEvent);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

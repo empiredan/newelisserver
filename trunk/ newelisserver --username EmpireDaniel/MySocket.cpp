@@ -50,7 +50,7 @@ void CMySocket::SetParent(CELISTestServerDlg* pDlg)
 void CMySocket::OnAccept(int nErrorCode) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	if(nErrorCode==0){
+	if(nErrorCode == 0){
 		m_pConnectSocket = new CMySocket;
 		
 		if(!this->Accept(m_pConnectSocket)){
@@ -77,78 +77,49 @@ void CMySocket::OnAccept(int nErrorCode)
 void CMySocket::OnReceive(int nErrorCode) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	if(nErrorCode==0){
-		ULONG *t;
-		ULONG len;
-		ULONG cmdType;
+	if(nErrorCode == 0){
 		
 		if (m_rcvStatus == SOCK_RECEIVE_HEADER) {
-			len = m_pConnectSocket->Receive(pBuf, rremain, 0);
+
+			ULONG rcvLen = m_pConnectSocket->Receive(m_headBuf+m_receivedLen, m_headLen-m_receivedLen, 0);
 			//解析header，确定body长度
-			if(len != SOCKET_ERROR && len > 0) {
-				received += len;
-				if(received == SOCK_RECEIVE_HEADER_LEN) {
-					t = (ULONG*)m_rbuf;
-					cmdType = ntohl(t[0]);
-					//t = (int*)m_rbuf;	
-					m_msDataLen = ntohl(t[1]);
-					m_bodyLen = m_msDataLen - SOCK_RECEIVE_HEADER_LEN;
+			if(rcvLen != SOCKET_ERROR && rcvLen > 0) {
+
+				m_receivedLen += rcvLen;
+
+				if(m_receivedLen == m_headLen) {
+
+					ULONG *head;
+					head= (ULONG*)m_headBuf;
+					m_cmdType = ntohl(head[0]);
+					m_totalLen = ntohl(head[1]);
+					m_bodyLen = m_totalLen - m_headLen;
 					
-					if(m_bodyLen <= 0) {
-						AfxMessageBox(_T("OnReceive Strange Err: message body have 0 length"));
-					} else {
-						if((m_bodyLen + SOCK_RECEIVE_HEADER_LEN) > m_rbuflen) {
-							BUF_TYPE *bft;
-							bft = new BUF_TYPE[m_bodyLen + SOCK_RECEIVE_HEADER_LEN];
-							
-							ASSERT(bft != NULL);
-							
-							memcpy(bft, m_rbuf, SOCK_RECEIVE_HEADER_LEN);
-							delete []m_rbuf;
-							m_rbuf = bft;
-							m_rbuflen = m_bodyLen + SOCK_RECEIVE_HEADER_LEN;
-							received = 0;
-							pBuf = m_rbuf;
-							rremain = m_bodyLen;
-						}
-						m_rStatus = SOCK_RECEIVE_BODY;
-						rremain = m_bodyLen;
-						received = 0;
-						pBuf = m_rbuf + SOCK_RECEIVE_HEADER_LEN;
-					}
-				} else {
-					rremain = SOCK_RECEIVE_HEADER_LEN - len;
-					pBuf = pBuf + len;
-				}
+					m_rcvStatus = SOCK_RECEIVE_BODY;
+					m_receivedLen = 0;
+				
+				} 
+
 			} 
-		} else if(m_rStatus == SOCK_RECEIVE_BODY) {
-			len = m_psConnectSocket->Receive(pBuf, rremain, 0);
+
+		} else if(m_rcvStatus == SOCK_RECEIVE_BODY) {
+
+			ULONG rcvLen = m_pConnectSocket->Receive(m_bodyBuf+m_receivedLen, m_bodyLen-m_receivedLen, 0);
 			
-			if(len != SOCKET_ERROR && len > 0) {
-				received += len;
-				if(received == m_bodyLen) {
-					//把接收到的rbuf填入ReceiverQueue中
-					CMasterData* p_msData=new CMasterData();
-					p_msData->setData(m_rbuf, m_bodyLen + SOCK_RECEIVE_HEADER_LEN);
-					m_pmasterDataQueue->enQueue(p_msData);
+			if(rcvLen != SOCKET_ERROR && rcvLen > 0) {
+
+				m_receivedLen += rcvLen;
+
+				if(m_receivedLen == m_bodyLen) {
 					
-					m_rStatus = SOCK_RECEIVE_HEADER;
-					pBuf = m_rbuf;
-					rremain = SOCK_RECEIVE_HEADER_LEN;
-					received = 0;
-				} else if(received < m_bodyLen) {
-					rremain = m_bodyLen - received;
-					pBuf += len;
-				} else {
-					AfxMessageBox(_T("Recceive Body should no occur"));
-				}
-			} else {
-				if(len <= 0) {
-					AfxMessageBox(_T("OnReceive body length received <=0"));
-				} else {
-					AfxMessageBox(_T("OnReceive Socket error"));
-				}
-			}
+					CMasterData * mData=new CMasterData(m_cmdType, m_totalLen, m_headLen, m_bodyBuf, m_bodyLen);
+					::PostThreadMessage(m_pCmdHandlerThread->m_nThreadID, WM_COMMAND_DATA, NULL, mData);
+					m_rcvStatus = SOCK_RECEIVE_HEADER;
+					m_receivedLen = 0;
+				} 
+
+			} 
+
 		} else {
 			AfxMessageBox(_T("OnReceive wrong status"));
 			//m_rStatus = SOCK_RECEIVE_HEADER;

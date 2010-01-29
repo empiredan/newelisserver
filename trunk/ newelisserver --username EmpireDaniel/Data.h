@@ -37,6 +37,7 @@ class CMasterData:public CData {
 public:
 	CMasterData();
 	CMasterData(BUF_TYPE* bf, ULONG len);
+	CMasterData(ULONG cmdtype, ULONG totallen, ULONG headlen, BUF_TYPE * bodybuf, ULONG bodylen);
 	virtual ~CMasterData();
 	inline ULONG GetCmdType(){return m_cmdType;}
 	inline ULONG GetTotalLen(){return m_totalLen;}

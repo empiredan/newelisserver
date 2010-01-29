@@ -80,8 +80,20 @@ CMasterData::CMasterData():CData() {
 }
 CMasterData::CMasterData(BUF_TYPE* bf, ULONG len):CData(bf, len) {
 }
+CMasterData::CMasterData(ULONG cmdtype, ULONG totallen, ULONG headlen, BUF_TYPE * bodybuf, ULONG bodylen)
+{
+	m_cmdType = cmdtype;
+	m_totalLen = totallen;
+	m_headLen = headlen;
+	m_bodyBuf = new BUF_TYPE[bodylen+10];
+	memcpy(m_bodyBuf, bodybuf, bodylen);
+	m_bodyLen = bodylen;
+}
 CMasterData::~CMasterData() {
-	//CData::~CData();
+	if (!m_bodyBuf)
+	{
+		delete []m_bodyBuf;
+	}
 }
 
 //CFrontData----------------

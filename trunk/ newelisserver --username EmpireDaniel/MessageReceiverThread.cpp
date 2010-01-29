@@ -40,7 +40,7 @@ BEGIN_MESSAGE_MAP(CMessageReceiverThread, CWinThread)
 	//{{AFX_MSG_MAP(CMessageReceiverThread)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		ON_THREAD_MESSAGE(WM_PORT, OnPort)
-		ON_THREAD_MESSAGE(WM_ACCEPT, OnSocketAccept)
+		//ON_THREAD_MESSAGE(WM_ACCEPT, OnSocketAccept)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -77,8 +77,9 @@ VOID CMessageReceiverThread::OnPort(WPARAM wParam, LPARAM lParam)
 		}
 	}
 }
-
+/*
 VOID CMessageReceiverThread::OnSocketAccept(WPARAM wParam, LPARAM lParam)
 {
 
 }
+*/

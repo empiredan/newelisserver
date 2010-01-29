@@ -50,7 +50,7 @@ protected:
 	//{{AFX_MSG(CMessageReceiverThread)
 		// NOTE - the ClassWizard will add and remove member functions here.
 		afx_msg VOID OnPort(WPARAM wParam, LPARAM lParam);
-		afx_msg VOID OnSocketAccept(WPARAM wParam, LPARAM lParam);
+		//afx_msg VOID OnSocketAccept(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
