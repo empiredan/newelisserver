@@ -22,8 +22,26 @@ class CMySocket : public CAsyncSocket
 public:
 	CCommandHandlerThread * m_pCmdHandlerThread;
 private:
-	CMySocket * m_pConnectSocket;
-	UINT m_rcvStatus;
+	//The pointer of connection socket
+	CAsyncSocket * m_pConnectSocket;
+
+	//Receiving status
+	UINT m_rcvStatus = SOCK_RECEIVE_HEADER;
+
+	ULONG m_receivedLen = 0;
+
+	BUF_TYPE m_headBuf[SOCK_RECEIVE_HEADER_LEN+10];
+
+	//Head of received data
+	ULONG m_cmdType;
+	ULONG m_totalLen;
+	//Size of head
+	ULONG m_headLen = SOCK_RECEIVE_HEADER_LEN;
+	//Body of received data	
+	BUF_TYPE * m_bodyBuf;
+	//Head of body
+	ULONG m_bodyLen;
+
 // Operations
 public:
 	CMySocket();

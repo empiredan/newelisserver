@@ -41,8 +41,8 @@ int CCommandHandlerThread::ExitInstance()
 
 BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	//{{AFX_MSG_MAP(CCommandHandlerThread)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
+	ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
+	ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -604,3 +604,9 @@ void CCommandHandler::NetCmd_DepthCHT(CMasterData *d) {
 	*/
 }
 */
+void CCommandHandlerThread::OnTimer(UINT nIDEvent) 
+{
+	// TODO: Add your message handler code here and/or call default
+	
+	CWinThread::OnTimer(nIDEvent);
+}
