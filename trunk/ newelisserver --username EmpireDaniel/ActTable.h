@@ -23,7 +23,7 @@ public:
 	int	m5Length;
 	int	m7Length;
 public:
-	void ConvertData() {
+	inline void ConvertData() {
 		actNo = ntohl(actNo);
 		switchOn = ntohl(switchOn);
 		actDone = ntohl(actDone);
