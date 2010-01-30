@@ -5,7 +5,7 @@
 #include "Utils.h"
 
 //#pragma once
-class CELISTestServerDlg;
+//class CELISTestServerDlg;
 class RTCSubset
 {
 public:
