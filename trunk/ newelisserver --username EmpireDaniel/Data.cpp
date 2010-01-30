@@ -40,7 +40,7 @@ CMasterData::CMasterData(ULONG cmdtype, ULONG totallen, ULONG headlen, BUF_TYPE 
 	m_bodyLen = bodylen;
 }
 CMasterData::~CMasterData() {
-	if (!m_bodyBuf)
+	if (m_bodyBuf)
 	{
 		delete []m_bodyBuf;
 	}
