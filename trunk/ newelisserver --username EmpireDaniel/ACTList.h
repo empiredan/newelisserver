@@ -120,6 +120,9 @@ private:
 	int m_timeDeltaOfDepthMode;
 	int m_timeDeltaOfTimeMode;
 	long m_depthDUDelta;
+	//float m_depthDelta_toM;
+	//float m_depthDelta_toImp;
+	//float m_depthDelta_Consistency;
 
 //Operations
 public:
@@ -142,7 +145,12 @@ public:
 			}
 		}
 	}
-	inline void SetDepthDuDeltaWithDirection(){
+	inline void SetDepthDuDeltaWithDirection(int direction){
+		if (!direction)
+		{
+			m_depthDUDelta*= -1;
+		} 
+		
 	}
 	inline int GetTimeDelta(UINT32 workMode){
 		if (workMode == RtcSYS_STANDBY_CMD)
