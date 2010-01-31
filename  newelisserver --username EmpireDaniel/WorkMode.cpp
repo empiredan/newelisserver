@@ -1,31 +1,41 @@
+// WorkMode.cpp: implementation of the CWorkMode class.
+//
+//////////////////////////////////////////////////////////////////////
+
 #include "stdafx.h"
+#include "elistestserver.h"
 #include "WorkMode.h"
 
-CWorkMode::CWorkMode(void)
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CWorkMode::CWorkMode()
 {
-	//此处加入计算work mode body长度的代码要根据
-	//收到的命令所解析的结构CActTable来计算
-	bodyLen = sizeof(UINT32);
-	//AfxMessageBox(_T("此处加入计算workmode body长度的代码要根据收到的命令所解析的结构CActTable来计算"));
-	cmdLen = bodyLen + SOCK_RECEIVE_HEADER_LEN;
-	cmdType = NET_RETURN_WORKMODE;
-}
-CWorkMode::CWorkMode(BUF_TYPE* bf, ULONG len):CFrontData(bf, len)
-{
-	//此处加入计算work mode body长度的代码要根据
-	//收到的命令所解析的结构CActTable来计算
-	//AfxMessageBox(_T("此处加入计算workmode body长度的代码要根据收到的命令所解析的结构CActTable来计算"));
-	bodyLen = sizeof(UINT32);
-	cmdLen = bodyLen + SOCK_RECEIVE_HEADER_LEN;
-	cmdType = NET_RETURN_WORKMODE;
+
 }
 
-void CWorkMode::setData(BUF_TYPE *bf, ULONG len) {
-	setHeader(cmdType, cmdLen);
-	
-	CData::setData(bf, len);
+CWorkMode::~CWorkMode()
+{
+
 }
 
-CWorkMode::~CWorkMode(void)
+void CWorkMode::Init(BUF_TYPE * bodyBuf)
 {
+	UINT32 * bodyBufHead;
+	bodyBufHead = (UINT32 *)bodyBuf;
+
+	if (m_workMode != RtcSYS_IDLE_CMD)
+	{
+		m_oldWorkMode = m_workMode;
+	}
+
+	m_workMode = ntohl(bodyBufHead[0]);
+	m_direction = ntohl(bodyBufHead[1]);
 }

@@ -64,6 +64,7 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	{
 		m_depthDUDelta = IMPERIAL_DU/m_commonDepthSampleRate;
 	}
+
 	//For Time Mode
 	int m_commonTimeInterval = m_actList.pSaList[0].timeInterval;
 	for (i = 1; i < m_actList.actNum; i++)
