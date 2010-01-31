@@ -41,7 +41,7 @@ int CCommandHandlerThread::ExitInstance()
 
 void CCommandHandlerThread::Init()
 {
-
+	
 }
 
 BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
