@@ -9,6 +9,9 @@ typedef BYTE BUF_TYPE;
 #define IMPERIAL_DU ((LONG)30480)
 #define METRIC_DU   ((LONG)100000)
 
+#define SUBSET_DATA_TIMER 1111
+#define DEPTH_DATA_TIMER 1112
+#define DEPTH_DATA_TIMER_INTERVAL 1000
 
 /*!  command type*/
 #define NET_CMD_NA									((ULONG)0x0)

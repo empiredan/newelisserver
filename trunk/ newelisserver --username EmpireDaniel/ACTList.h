@@ -126,24 +126,19 @@ private:
 
 //Operations
 public:
-	void Init(BUF_TYPE * bodyBuf);
-	inline void SetTimeDeltaOfDepthMode(float speed, int measure){
+	void Init(BUF_TYPE * bodyBuf, ULONG bodyLen);
+	inline void SetTimeDeltaOfDepthMode(long speed){
 		speed/= 60;
-		if (measure == m_actList.nDepthInterruptMode)
+		
+		if (m_actList.nDepthInterruptMode)
 		{
-			m_timeDeltaOfDepthMode = 1000/(speed*m_commonDepthSampleRate)+0.5;
+			m_timeDeltaOfDepthMode = 1000*METRIC_DU/(speed*m_commonDepthSampleRate)+0.5;
 		} 
 		else
 		{
-			if (m_actList.nDepthInterruptMode)
-			{
-				m_timeDeltaOfDepthMode = 1000*METRIC_DU/(speed*IMPERIAL_DU*m_commonDepthSampleRate)+0.5;
-			} 
-			else
-			{
-				m_timeDeltaOfDepthMode = 1000*IMPERIAL_DU/(speed*METRIC_DU*m_commonDepthSampleRate)+0.5;
-			}
+			m_timeDeltaOfDepthMode = 1000*IMPERIAL_DU/(speed*m_commonDepthSampleRate)+0.5;
 		}
+		
 	}
 	inline void SetDepthDuDeltaWithDirection(int direction){
 		if (!direction)

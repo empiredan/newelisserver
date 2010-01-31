@@ -10,6 +10,9 @@
 #include "commands.h"
 #include "Data.h"
 
+#include "MessageReceiverThread.h"
+#include "MessageSenderThread.h"
+
 #define WM_COMMAND_DATA WM_USER+1
 #define WM_DATABUF WM_USER+2
 #define WM_ACTROOT WM_USER+3
@@ -38,9 +41,18 @@ private:
 	//Head of body
 	ULONG m_bodyLen;
 
+	CACTList m_cACTList;
+	CWorkMode m_cWorkMode;
+
+	long m_speedDUPM;
+	long m_trueDepthDU;
+	long m_correctedDepthDU;
+
+	CMessageReceiverThread * m_msgRcvThread;
+	CMessageSenderThread * m_msgSndThread;
 // Operations
 public:
-
+	void Init();
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CCommandHandlerThread)
@@ -86,8 +98,9 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CCommandHandlerThread)
 	afx_msg VOID OnCommand(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg VOID CALLBACK OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	//}}AFX_MSG
+	
 
 	DECLARE_MESSAGE_MAP()
 

@@ -39,20 +39,33 @@ int CCommandHandlerThread::ExitInstance()
 	return CWinThread::ExitInstance();
 }
 
+void CCommandHandlerThread::Init()
+{
+
+}
+
 BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	//{{AFX_MSG_MAP(CCommandHandlerThread)
 	ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
-	ON_WM_TIMER()
+	ON_THREAD_MESSAGE(WM_TIMER, OnTimerProc)
+	//ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread message handlers
+VOID CALLBACK CCommandHandlerThread::OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	if (idEvent == SUBSET_DATA_TIMER)
+	{
+	} 
+	else if (idEvent == DEPTH_DATA_TIMER)
+	{
+	}
+}
 VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 {
 	CMasterData * mData = (CMasterData *)lParam;
-	ULONG cmdtype;
-	ULONG * buft;
 
 	ASSERT(mData != NULL);
 	
@@ -209,20 +222,17 @@ inline void CCommandHandlerThread::PreProcessMasterData(CMasterData *md)
 }
 
 void CCommandHandlerThread::NetCmd_InitServiceTable() {
-	//AfxMessageBox(_T("Implement me, NetCmd_InitServiceTable"));
-
-	CActTable *tb;
-	//int rate[2];
-	UINT logTimerInterval;
-
-	logTimerInterval = 5000;
-
-	tb = CActTable::AllocateActTable((d->buf)+headSize, d->contentlen-headSize);
-	tb->ConvertData();
-	dlg->SetACTTable(tb);
-	tb->Save(dlg->log);
-
 	
+	m_cACTList.Init(m_bodyBuf);
+
+	//Send the "show ACT list" message to Dialog
+	
+	//Get the time delta(now the work state should be 
+	//STANDBY TIME) and create log timer and depth timer
+	//so that the subset data
+	//and depth data can be returned to ELIS client
+
+	::SetTimer(NULL, SUBSET_DATA_TIMER, m_cACTList.GetTimeDelta(m_cWorkMode.GetWorkMode()), NULL);
 	//别忘了在这里要delete CMasterData类型的指针d。
 	//因为原则上，这里把这个收到的前端机发送过来的数据
 	//处理完毕，就不会再使用了，要把它删除掉。
@@ -232,11 +242,12 @@ void CCommandHandlerThread::NetCmd_InitServiceTable() {
 	//如果这里的数据需要作为长期使用的参数保存，那么
 	//应该把它们通过对应的数据结构拷贝出去。
 	//delete d;
-	
+	/*
 	char logdata[1024];
 	sprintf(logdata, "CCommandHandler::InitServiceTable\n");
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
+	*/
 }
 
 void CCommandHandlerThread::NetCmd_CalibPara() {
@@ -292,6 +303,7 @@ void CCommandHandlerThread::NetCmd_CalibStart() {
 	//dlg->log.Write(logdata, strlen(logdata));
 	//dlg->log.Flush();
 }
+/*
 void CCommandHandlerThread::NetCmd_CalibStop() {
 	BUF_TYPE *bodyBuf;
 	ULONG bodyLen;
@@ -314,32 +326,33 @@ void CCommandHandlerThread::NetCmd_CalibStop() {
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
 }
-
+*/
 void CCommandHandlerThread::NetCmd_CtrlWorkState() {
-	BUF_TYPE *bodyBuf;
-	ULONG bodyLen;
+	
 
-	ULONG *head;
-	ULONG cmdType, totalLen;
+	m_cWorkMode.Init(m_bodyBuf);
+	m_cACTList.SetDepthDuDeltaWithDirection(m_cWorkMode.GetDirection());
 
-	UINT32 *conts;
-	ULONG *rtnh;
-	UINT32 oldmode;
+	//Send the "show work state and direction" message to Dialog
 
 
-	head = (ULONG*)d->buf;
-	cmdType = ntohl(head[0]);
-	totalLen = ntohl(head[1]);
 
-	bodyLen = totalLen - headSize;
-	bodyBuf = d->buf + headSize;
+	//Response for the received "work state" command
 
-	oldmode = dlg->wms->mode;
+
+
+	//Get the time delta(now the work state should be 
+	//STANDBY TIME) and create log timer and depth timer
+	//so that the subset data
+	//and depth data can be returned to ELIS client
+	
+	::SetTimer(NULL, SUBSET_DATA_TIMER, m_cACTList.GetTimeDelta(m_cWorkMode.GetWorkMode()), (TIMERPROC)OnTimerProc);
+	::SetTimer(NULL, DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
+	/*
 	dlg->wms->fillWorkMode(bodyBuf, bodyLen);
 
 
-	CWorkMode *wm = new CWorkMode();
-	wm->setData((BUF_TYPE*)&dlg->wms->mode, sizeof(UINT32));
+	
 	char logdata[1024];
 	sprintf(logdata, "NetCmd_CtrlWorkState,received cmd:%lx, state:%lx, direction:%d\n",
 		cmdType, dlg->wms->mode, dlg->wms->direction);
@@ -347,7 +360,7 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 	rtnh = (ULONG*)wm->buf;
 	conts = (UINT32*)(wm->buf+2*sizeof(ULONG));
 	sprintf(logdata, "NetCmd_CtrlWorkState,return cmd:%lx,size:%d,conts:%lx\n",rtnh[0], rtnh[1], conts[0]);
-
+	
 
 	dlg->log.Write(logdata, strlen(logdata));
 	//sprintf(logdata, "NetCmd_CtrlWorkState,在fillWorkmode之后，应该执行一个更新界面上");
@@ -366,8 +379,9 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 
 	//最后执行工作状态改变后在新状态下应该做的事
 	dlg->HandleWorkStateChange();
+	*/
 }
-
+/*
 void CCommandHandlerThread::NetCmd_SetStandbyTimeInterval() {
 	BUF_TYPE *bodyBuf;
 	ULONG bodyLen;
@@ -427,6 +441,7 @@ void CCommandHandlerThread::NetCmd_CtrlActSwitch() {
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
 }
+*/
 void CCommandHandlerThread::NetCmd_CtrlActDeactivate() {
 	BUF_TYPE *bodyBuf;
 	ULONG bodyLen;
@@ -502,62 +517,44 @@ void CCommandHandlerThread::NetCmd_DepthDirection() {
 }
 */
 void CCommandHandlerThread::NetCmd_DepthSpeed() {
-	BUF_TYPE *bodyBuf;
-	ULONG bodyLen;
 	
-	ULONG *head;
-	ULONG cmdType, totalLen;
-	
-	head = (ULONG*)d->buf;
-	cmdType = ntohl(head[0]);
-	totalLen = ntohl(head[1]);
-	
-	bodyLen = totalLen - headSize;
-	bodyBuf = d->buf + headSize;
-	dlg->setSpeed(bodyBuf, bodyLen);
+	long * speed = (long *)m_bodyBuf;
+	m_speedDUPM = ntohl(speed[0]);
+	m_cACTList.SetTimeDeltaOfDepthMode(m_speedDUPM);
+	//Send the "show speed" message to Dialog
 
+	/*
 	char logdata[1024];
 	sprintf(logdata, "Implement me!! CCommandHandler::NetCmd_DepthSpeed\n");
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
+	*/
 }
 void CCommandHandlerThread::NetCmd_TrueDepth() {
-	BUF_TYPE *bodyBuf;
-	ULONG bodyLen;
 	
-	ULONG *head;
-	ULONG cmdType, totalLen;
-	
-	head = (ULONG*)d->buf;
-	cmdType = ntohl(head[0]);
-	totalLen = ntohl(head[1]);
-	
-	bodyLen = totalLen - headSize;
-	bodyBuf = d->buf + headSize;
-	dlg->setTrueDepth(bodyBuf, bodyLen);
+	long * trueDepth = (long *)m_bodyBuf;
+	m_trueDepthDU = ntohl(trueDepth[0]);
+	//Send the "show true depth" message to Dialog
+
+	/*
 	char logdata[1024];
 	sprintf(logdata, "Implement me!! CCommandHandler::NetCmd_TrueDepth\n");
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
+	*/
 }
 void CCommandHandlerThread::NetCmd_CorrectedDepth() {
-	BUF_TYPE *bodyBuf;
-	ULONG bodyLen;
 	
-	ULONG *head;
-	ULONG cmdType, totalLen;
-	
-	head = (ULONG*)d->buf;
-	cmdType = ntohl(head[0]);
-	totalLen = ntohl(head[1]);
-	
-	bodyLen = totalLen - headSize;
-	bodyBuf = d->buf + headSize;
-	dlg->setCorrectedDepth(bodyBuf, bodyLen);
+	long * correctedDepth = (long *)m_bodyBuf;
+	m_correctedDepthDU = ntohl(correctedDepth[0]);
+	//Send the "show corrected depth" message to Dialog
+
+	/*
 	char logdata[1024];
 	sprintf(logdata, "Implement me!! CCommandHandler::NetCmd_CorrectedDepth\n");
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
+	*/
 }
 /*
 void CCommandHandler::NetCmd_ManualDepthCorrection(CMasterData *d) {
@@ -597,16 +594,17 @@ void CCommandHandler::NetCmd_DepthTensionAngle(CMasterData *d) {
 	dlg->log.Flush();
 }
 void CCommandHandler::NetCmd_DepthCHT(CMasterData *d) {
-	/*char logdata[1024];
+	char logdata[1024];
 	sprintf(logdata, "Implement me!! CCommandHandler::NetCmd_DepthCHT\n");
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
-	*/
+	
 }
-*/
+
 void CCommandHandlerThread::OnTimer(UINT nIDEvent) 
 {
 	// TODO: Add your message handler code here and/or call default
 	
 	CWinThread::OnTimer(nIDEvent);
 }
+*/
