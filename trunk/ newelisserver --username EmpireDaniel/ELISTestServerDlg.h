@@ -76,6 +76,9 @@ public:
 	ULONG rremain, received;
 
 
+	CSocketThread * m_socketThread;
+	CCommandHandlerThread * m_cmdHandlerThread;
+
 	MasterDataQueue<CMasterData>* m_pmasterDataQueue;
 	//MasterDataQueue<CMasterData> mq;
 	FrontDataQueue<CFrontData> fq;

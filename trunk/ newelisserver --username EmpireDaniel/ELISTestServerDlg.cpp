@@ -434,6 +434,10 @@ BOOL CELISTestServerDlg::OnInitDialog()
 	msgs.start();
 	ta = 5;
 
+	m_cmdHandlerThread = AfxBeginThread((RUNTIME_CLASS)CCommandHandlerThread);
+	m_socketThread = AfxBeginThread((RUNTIME_CLASS)CSocketThread);
+	m_socketThread->SetCmdHandlerThreadID(m_cmdHandlerThread->m_nThreadID);
+	m_cmdHandlerThread->SetSocketThreadID(m_socketThread->m_nThreadID);
 	//acttab->setParentDlg(this);
 
 	UpdateData(FALSE);

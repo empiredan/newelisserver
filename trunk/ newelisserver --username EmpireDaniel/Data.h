@@ -44,23 +44,37 @@ private:
 class CFrontData:public CData {
 public:
 	CFrontData();
-	CFrontData(BUF_TYPE* bf, ULONG len);
+	CFrontData(ULONG totalLen);
 	virtual ~CFrontData();
 	
-public:
-	ULONG cmdType;
-	ULONG cmdLen;
-	ULONG bodyLen;
-public:
-	ULONG getCmdLength() {
-		return cmdLen;
+	inline void SetHeadOfBuf(ULONG cmdType, ULONG totalLen, ULONG headLen){
+		/*
+		memcpy(m_pBuf, &((BUF_TYPE)cmdType), sizeof(ULONG));
+		m_pBuf+= sizeof(ULONG);
+		memcpy(m_pBuf, &((BUF_TYPE)cmdType), sizeof(ULONG));
+		m_pBuf+= sizeof(ULONG);
+		*/
+		ULONG * head = (ULONG *)m_pBuf;
+		head[0] = cmdType;
+		head[1] = totalLen;
+		m_pBuf+= headLen;
 	}
-	ULONG getCmdType() {
-		return cmdType;
+	inline void SetBodyOfBuf(BUF_TYPE * sectionOfBody, ULONG sectionLen){
+		memcpy(m_pBuf, sectionOfBody, sectionLen);
+		m_pBuf+= sectionLen;
 	}
-	ULONG getBodyLength() {
-		return bodyLen;
+	inline BUF_TYPE * GetTotalBuf() {
+		return m_totalBuf;
 	}
+	inline ULONG GetTotalLen() {
+		return m_totalLen;
+	}
+
+private:
+
+	BUF_TYPE * m_totalBuf;
+	BUF_TYPE * m_pBuf;
+	ULONG m_totalLen;
 };
 
 #endif // !defined(AFX_DATA_H__6047988D_24DC_4EAF_9AFD_044DD1AC6898__INCLUDED_)

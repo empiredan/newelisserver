@@ -10,8 +10,8 @@
 #include "commands.h"
 #include "Data.h"
 
-#include "MessageReceiverThread.h"
-#include "MessageSenderThread.h"
+//#include "MessageReceiverThread.h"
+//#include "MessageSenderThread.h"
 
 #define WM_COMMAND_DATA WM_USER+1
 #define WM_DATABUF WM_USER+2
@@ -48,11 +48,14 @@ private:
 	long m_trueDepthDU;
 	long m_correctedDepthDU;
 
-	CMessageReceiverThread * m_msgRcvThread;
-	CMessageSenderThread * m_msgSndThread;
+	DWORD m_socketThreadID;
+	
 // Operations
 public:
 	void Init();
+	inline void SetSocketThreadID(DWORD tid){
+		m_socketThreadID = tid;
+	}
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CCommandHandlerThread)

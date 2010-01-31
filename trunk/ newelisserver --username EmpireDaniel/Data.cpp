@@ -49,8 +49,13 @@ CMasterData::~CMasterData() {
 //CFrontData----------------
 CFrontData::CFrontData():CData() {
 }
-CFrontData::CFrontData(BUF_TYPE* bf, ULONG len):CData(bf, len) {
+CFrontData::CFrontData(ULONG totalLen):CData() {
+	m_totalBuf = new BUF_TYPE[totalLen+10];
+	m_pBuf = m_totalBuf;
 }
 CFrontData::~CFrontData() {
-	//CData::~CData();
+	if (m_totalBuf)
+	{
+		delete []m_totalBuf;
+	}
 }
