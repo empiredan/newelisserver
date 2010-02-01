@@ -27,7 +27,10 @@ CData::~CData()
 }
 
 //CMasterData----------------
-CMasterData::CMasterData():CData() {
+CMasterData::CMasterData()
+:CData() 
+{
+
 }
 
 CMasterData::CMasterData(ULONG cmdtype, ULONG totallen, ULONG headlen, BUF_TYPE * bodybuf, ULONG bodylen)
@@ -39,6 +42,7 @@ CMasterData::CMasterData(ULONG cmdtype, ULONG totallen, ULONG headlen, BUF_TYPE 
 	memcpy(m_bodyBuf, bodybuf, bodylen);
 	m_bodyLen = bodylen;
 }
+
 CMasterData::~CMasterData() {
 	if (m_bodyBuf)
 	{
@@ -47,12 +51,18 @@ CMasterData::~CMasterData() {
 }
 
 //CFrontData----------------
-CFrontData::CFrontData():CData() {
+CFrontData::CFrontData()
+:CData() 
+{
+
 }
-CFrontData::CFrontData(ULONG totalLen):CData() {
+
+CFrontData::CFrontData(ULONG totalLen) 
+{
 	m_totalBuf = new BUF_TYPE[totalLen+10];
 	m_pBuf = m_totalBuf;
 }
+
 CFrontData::~CFrontData() {
 	if (m_totalBuf)
 	{

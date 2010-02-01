@@ -59,8 +59,8 @@ public:
 		head[1] = totalLen;
 		m_pBuf+= headLen;
 	}
-	inline void SetBodyOfBuf(BUF_TYPE * sectionOfBody, ULONG sectionLen){
-		memcpy(m_pBuf, sectionOfBody, sectionLen);
+	inline void SetBodyOfBuf(BUF_TYPE * sectionBuf, ULONG sectionLen){
+		memcpy(m_pBuf, sectionBuf, sectionLen);
 		m_pBuf+= sectionLen;
 	}
 	inline BUF_TYPE * GetTotalBuf() {
