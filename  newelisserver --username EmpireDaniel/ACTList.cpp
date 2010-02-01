@@ -104,18 +104,6 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 
 	m_rtcBlockDataHeaderLen = sizeof(RtcBLOCK_DATA_HEADER);
 
-	m_totalReturnedSubsetDataLen = 0;
-
-	m_allSubsetsLenOfAllToolSubset = 0;
-
-	/*
-	* A head with 2-ULONG-size plus a general state
-	* with 1-ULONG-size
-	*/
-	m_totalReturnedSubsetDataLen+= 3*sizeof(ULONG);
-	m_totalReturnedSubsetDataLen+= m_rtcBlockDataHeaderLen	\
-	*m_actList.actNum;
-
 	if (m_subsetOfDepthMode)
 	{
 		delete []m_subsetOfDepthMode;
@@ -135,6 +123,17 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	/*
 	* For Depth Mode
 	*/
+	m_totalReturnedSubsetDataLenOfDepthMode = 0;
+
+	m_allSubsetsLenOfAllToolSubsetOfDepthMode = 0;
+	
+	// A head with 2-ULONG-size plus a general state
+	// with 1-ULONG-size
+	m_totalReturnedSubsetDataLenOfDepthMode+= 3*sizeof(ULONG);
+
+	m_totalReturnedSubsetDataLenOfDepthMode+= m_rtcBlockDataHeaderLen	\
+	*m_actList.actNum;
+
 	for (i = 0 ;i < m_actList.actNum; i++)
 	{
 		m_subsetOfDepthMode[i].rtcBlockDataHeader.toolAddr =	\
@@ -176,6 +175,17 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	/*
 	* For Time Mode
 	*/
+	m_totalReturnedSubsetDataLenOfTimeMode = 0;
+
+	m_allSubsetsLenOfAllToolSubsetOfTimeMode = 0;
+
+	// A head with 2-ULONG-size plus a general state
+	// with 1-ULONG-size
+	
+	m_totalReturnedSubsetDataLenOfTimeMode+= 3*sizeof(ULONG);
+	m_totalReturnedSubsetDataLenOfTimeMode+= m_rtcBlockDataHeaderLen	\
+	*m_actList.actNum;
+
 	for (i = 0 ;i < m_actList.actNum; i++)
 	{
 		m_subsetOfTimeMode[i].rtcBlockDataHeader.toolAddr =		\
