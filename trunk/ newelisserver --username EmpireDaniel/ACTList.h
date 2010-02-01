@@ -92,7 +92,7 @@ typedef struct{
 
 class CACTList  
 {
-//Constructor and Deconstructor
+//Constructor and Destructor
 public:
 	CACTList();
 	virtual ~CACTList();
@@ -176,6 +176,7 @@ public:
 	inline long GetDepthDuDelta(){
 		return m_depthDUDelta;
 	}
+	/*----------------------------------------------------------------*/
 	inline ULONG GetTotalSubsetDataLen(ULONG i, UINT32 workMode){
 		if (workMode == RtcSYS_STANDBY_CMD)
 		{
@@ -196,10 +197,32 @@ public:
 		{
 			return m_subsetOfDepthMode[i].rtcBlockDataHeader;
 		}
-		return 0;
+		return (RtcBLOCK_DATA_HEADER)0;
 	}
 	inline ULONG GetRtcBlockDataHeaderLen(){
 		return m_rtcBlockDataHeaderLen;
+	}
+	inline ULONG GetAllSubsetsLenOfOneToolSubset(ULONG i, UINT32 workMode){
+		if (workMode == RtcSYS_STANDBY_CMD)
+		{
+			return m_subsetOfTimeMode[i].allSubsetsLenOfOneToolSubset;
+		}
+		else if(workMode == RtcSYS_RECSTART_CMD)
+		{
+			return m_subsetOfDepthMode[i].allSubsetsLenOfOneToolSubset;
+		}
+		return 0;
+	}
+	inline float GetPercentageOfDataFileBuf(ULONG i, UINT32 workMode){
+		if (workMode == RtcSYS_STANDBY_CMD)
+		{
+			return m_subsetOfTimeMode[i].percentateOfDataFileBuf;
+		}
+		else if(workMode == RtcSYS_RECSTART_CMD)
+		{
+			return m_subsetOfDepthMode[i].percentateOfDataFileBuf;
+		}
+		return 0;
 	}
 };
 
