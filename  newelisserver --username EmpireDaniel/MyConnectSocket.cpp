@@ -5,6 +5,8 @@
 #include "elistestserver.h"
 #include "MyConnectSocket.h"
 
+#include "CommandHandlerThread.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

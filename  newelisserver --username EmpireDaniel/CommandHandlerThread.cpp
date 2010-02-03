@@ -5,6 +5,7 @@
 #include "elistestserver.h"
 #include "CommandHandlerThread.h"
 
+#include "SocketThread.h"
 //#include "commands.h"
 //#include "Data.h"
 
@@ -48,6 +49,9 @@ BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	//{{AFX_MSG_MAP(CCommandHandlerThread)
 	ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
 	ON_THREAD_MESSAGE(WM_TIMER, OnTimerProc)
+	ON_THREAD_MESSAGE(WM_DATABUF, OnDataBuf)
+	ON_THREAD_MESSAGE(WM_ACTROOT, OnACTRoot)
+	ON_THREAD_MESSAGE(WM_CALVERROOT, OnCALVERRoot)
 	//ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -56,12 +60,131 @@ END_MESSAGE_MAP()
 // CCommandHandlerThread message handlers
 VOID CALLBACK CCommandHandlerThread::OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
-	if (idEvent == SUBSET_DATA_TIMER)
+	switch (idEvent)
 	{
-	} 
-	else if (idEvent == DEPTH_DATA_TIMER)
-	{
+	case SUBSET_DATA_TIMER:
+		SubsetDataTimerProc();
+		break;
+	case DEPTH_DATA_TIMER:
+		DepthDataTimerProc();
+		break;
+	default:
+		break;
 	}
+	
+}
+void CCommandHandlerThread::SubsetDataTimerProc()
+{
+	switch (m_cWorkMode.GetWorkMode())
+	{
+	case RtcSYS_RECSTART_CMD:
+		m_trueDepthDU+= m_cACTList.GetDepthDuDelta();
+		m_correctedDepthDU+= m_cACTList.GetDepthDuDelta();
+		//Send the depth to the Dialog for showing
+		
+	case RtcSYS_STANDBY_CMD:
+		m_timeMS+= m_cACTList.GetTimeMSDelta(m_cWorkMode.GetWorkMode());
+		//Send the time to the Dialog for showing
+
+		//Send to the socket thread the data ready to be 
+		//returned to ELIS Client 
+		CFrontData * fData = new CFrontData(m_cACTList.GetTotalSubsetDataLen(m_cWorkMode.GetWorkMode()));
+		fData->SetHeadOfBuf(NET_RETURN_SUBSETDATA, m_headLen);
+		ULONG totalState = 0;
+		fData->SetBodyOfBuf((BUF_TYPE *)&totalState, sizeof(ULONG));
+		for (ULONG i = 0; i <m_cACTList.GetACTNum(); i++)
+		{
+			fData->SetBodyOfBuf(m_cACTList.GetRtcBlockDataHeader(	\
+			i, m_cWorkMode.GetWorkMode()),					\
+			m_cACTList.GetRtcBlockDataHeaderLen());
+
+			fData->SetBodyOfBuf(m_cDataFileBuffer.GetCurrentPositionOfBlock(i),	\
+			m_cACTList.GetAllSubsetsLenOfOneToolSubset(i,	\
+			m_cWorkMode.GetWorkMode()));
+
+			m_cDataFileBuffer.NextPositionOfBlock(i);
+		}
+		::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, fData);
+
+		break;
+
+	default:
+		break;
+	}
+}
+void CCommandHandlerThread::DepthDataTimerProc()
+{
+	m_dpmDisplayPara.corr_Depth = m_correctedDepthDU;
+	m_dpmDisplayPara.true_Depth = m_trueDepthDU;
+	m_dpmDisplayPara.speed = m_speedDUPM/60;
+	m_dpmDisplayPara.totalTension = 5;
+	m_dpmDisplayPara.mmd = 0;
+	m_dpmDisplayPara.differTension = 2;
+	m_dpmDisplayPara.time = m_timeMS;
+	m_dpmDisplayPara.nreserved2 = 0;
+	
+	ULONG totalLen = m_headLen+sizeof(DPM_DISPLAY_PARA);
+	CFrontData * fData = new CFrontData(totalLen);
+	fData->SetHeadOfBuf(NET_RETURN_DPMPARA, m_headLen);
+	fData->SetBodyOfBuf((BUF_TYPE *)&m_dpmDisplayPara, sizeof(DPM_DISPLAY_PARA));
+
+	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, fData);
+}
+void CCommandHandlerThread::WorkModeProc()
+{
+	
+	switch (m_cWorkMode.GetWorkMode())
+	{
+	case RtcSYS_IDLE_CMD:
+		break;
+	case RtcSYS_CALIBSTART_CMD:
+		break;
+	case RtcSYS_TRAINSTART_CMD:
+		break;
+	case RtcSYS_RECSTART_CMD:
+		m_cACTList.SetDepthDuDeltaWithDirection(m_cWorkMode.GetDirection());
+		if (m_cWorkMode.GetOldWorkMode() == RtcSYS_RECSTART_CMD)
+		{
+			break;
+		}
+	case RtcSYS_STANDBY_CMD:
+
+		if (m_cWorkMode.GetOldWorkMode() != m_cWorkMode.GetWorkMode())
+		{
+			if (m_cWorkMode.GetOldWorkMode() != NET_CMD_NA)
+			{
+				::KillTimer(NULL, SUBSET_DATA_TIMER);
+			}
+			m_cDataFileBuffer.Init(m_cACTList.GetSubsetData(m_cWorkMode.GetWorkMode()));
+			//Get the time delta(now the work state should be 
+			//STANDBY TIME) and create log timer 
+			//so that the subset data can be returned to ELIS client
+			::SetTimer(NULL, SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(m_cWorkMode.GetWorkMode()), (TIMERPROC)OnTimerProc);
+		}
+
+		/*if (m_cWorkMode.GetOldWorkMode() == NET_CMD_NA)
+		{
+			
+		} */
+		
+		break;
+	default:
+		break;
+	}
+	
+}
+VOID CCommandHandlerThread::OnDataBuf(WPARAM wParam, LPARAM lParam)
+{
+	ULONG dataFileBufferLen = (ULONG)lParam;
+	m_cDataFileBuffer.SetBufferLen(dataFileBufferLen);
+}
+VOID CCommandHandlerThread::OnACTRoot(WPARAM wParam, LPARAM lParam)
+{
+
+}
+VOID CCommandHandlerThread::OnCALVERRoot(WPARAM wParam, LPARAM lParam)
+{
+
 }
 VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -224,6 +347,7 @@ inline void CCommandHandlerThread::PreProcessMasterData(CMasterData *md)
 void CCommandHandlerThread::NetCmd_InitServiceTable() {
 	
 	m_cACTList.Init(m_bodyBuf);
+	m_cDataFileBuffer.SetNumOfBlocks(m_cACTList.GetACTNum());
 
 	//Send the "show ACT list" message to Dialog
 	
@@ -232,7 +356,7 @@ void CCommandHandlerThread::NetCmd_InitServiceTable() {
 	//so that the subset data
 	//and depth data can be returned to ELIS client
 
-	::SetTimer(NULL, SUBSET_DATA_TIMER, m_cACTList.GetTimeDelta(m_cWorkMode.GetWorkMode()), NULL);
+	::SetTimer(NULL, DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
 	//别忘了在这里要delete CMasterData类型的指针d。
 	//因为原则上，这里把这个收到的前端机发送过来的数据
 	//处理完毕，就不会再使用了，要把它删除掉。
@@ -331,8 +455,8 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 	
 
 	m_cWorkMode.Init(m_bodyBuf);
-	m_cACTList.SetDepthDuDeltaWithDirection(m_cWorkMode.GetDirection());
-
+	
+	
 	//Send the "show work state and direction" message to Dialog
 
 
@@ -341,13 +465,7 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 
 
 
-	//Get the time delta(now the work state should be 
-	//STANDBY TIME) and create log timer and depth timer
-	//so that the subset data
-	//and depth data can be returned to ELIS client
-	
-	::SetTimer(NULL, SUBSET_DATA_TIMER, m_cACTList.GetTimeDelta(m_cWorkMode.GetWorkMode()), (TIMERPROC)OnTimerProc);
-	::SetTimer(NULL, DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
+	WorkModeProc();
 	/*
 	dlg->wms->fillWorkMode(bodyBuf, bodyLen);
 
@@ -520,7 +638,8 @@ void CCommandHandlerThread::NetCmd_DepthSpeed() {
 	
 	long * speed = (long *)m_bodyBuf;
 	m_speedDUPM = ntohl(speed[0]);
-	m_cACTList.SetTimeDeltaOfDepthMode(m_speedDUPM);
+	m_speedDUPS = m_speedDUPM/60;
+	m_cACTList.SetTimeDeltaOfDepthMode(m_speedDUPS);
 	//Send the "show speed" message to Dialog
 
 	/*

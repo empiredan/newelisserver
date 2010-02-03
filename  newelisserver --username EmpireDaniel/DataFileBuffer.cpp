@@ -34,37 +34,27 @@ CDataFileBuffer::~CDataFileBuffer()
 
 }
 
-void CDataFileBuffer::Init(ULONG bufLen, ULONG numOfBlocks,	\
-float * percentageOfBlock, ULONG * returnedSectionLenForOneTime, \
-CString * filePath)
+
+void CDataFileBuffer::Init(SubsetData * subsetData)
 {
-	m_bufferLen = bufLen;
-	m_numOfBlocks = numOfBlocks;
-	if (m_buffer)
-	{
-		delete []m_buffer;
-	}
-	if (m_blocks)
-	{
-		delete []m_blocks;
-	}
-	m_buffer = new BUF_TYPE[bufLen];
-	m_blocks = new BUF_TYPE[numOfBlocks];
 
 	//m_blocks[0] = m_buffer;
 	m_dataFileHeadLen = 3*sizeof(UINT32);
 	BUF_TYPE * curPosOfBuffer = m_buffer;
-	for (ULONG i = 0; i < numOfBlocks; i++)
+	for (ULONG i = 0; i < m_numOfBlocks; i++)
 	{
+		m_blocks[i].subsetLen = subsetData[i].rtcBlockDataHeader.dataSize;
+
+		m_blocks[i].allSubsetsOfOneToolSubset = subsetData[i].allSubsetsLenOfOneToolSubset;
 		
-		m_blocks[i].blockLen = ((float)bufLen*percentageOfBlock	\
-		/returnedSectionLenForOneTime[i])*returnedSectionLenForOneTime[i];
+		m_blocks[i].blockLen = ((float)m_bufferLen*subsetData[i].percentateOfDataFileBuf	\
+		/m_blocks[i].allSubsetsOfOneToolSubset)*m_blocks[i].allSubsetsOfOneToolSubset;
 
 		m_blocks[i].headOfBlock = curPosOfBuffer;
 
 		m_blocks[i].curPosOfBlock = curPosOfBuffer;
 
-		m_blocks[i].dataFilePath = filePath[i];
+		m_blocks[i].dataFilePath = "";
 		
 		//m_blocks[i].statusTypeLen = sizeof(long);
 
@@ -163,5 +153,19 @@ inline void CDataFileBuffer::WriteBlocksByReadFile(ULONG i)
 }
 inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 {
+	ULONG statusTypeLen = sizeof(long);
+
+	BUF_TYPE * blockEnd = m_blocks[i].headOfBlock+m_blocks[i].blockLen;
+
+	for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
+	{
+		memset(pBlock, 0, statusTypeLen);
+		pBlock+= statusTypeLen;
+		BUF_TYPE * subsetEnd = pBlock+m_blocks[i].subsetLen;
+		for ( ; pBlock < subsetEnd; pBlock++)
+		{
+			memset(pBlock, rand()%256, 1);
+		}
+	}
 
 }

@@ -95,7 +95,7 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 		int axb = m_commonTimeInterval * b;
 		LOWEST_COMMON_MULTIPLE(m_commonTimeInterval, b, axb)
 	}
-	m_timeDeltaOfTimeMode = m_commonTimeInterval;
+	m_timeMSDeltaOfTimeMode = m_commonTimeInterval;
 	/**---------------------------------------------------------**/
 
 	/**
