@@ -10,6 +10,7 @@
 #include "commands.h"
 #include "Data.h"
 #include "ACTList.h"
+#include "DataFileBuffer.h"
 //#include "MessageReceiverThread.h"
 //#include "MessageSenderThread.h"
 
@@ -20,6 +21,18 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread thread
+
+
+typedef struct {
+	int corr_Depth;
+	int true_Depth;
+	int speed;
+	int totalTension;		//总张力
+	int mmd;
+	int differTension;		//差分张力
+	UINT  time;					//时间
+	int   nreserved2;			//保留
+} DPM_DISPLAY_PARA;
 
 class CCommandHandlerThread : public CWinThread
 {
@@ -41,12 +54,18 @@ private:
 	//Head of body
 	ULONG m_bodyLen;
 
-	CACTList m_cACTList;
-	CWorkMode m_cWorkMode;
+	ULONG m_bufferLen = 0;
 
-	long m_speedDUPM;
-	long m_trueDepthDU;
-	long m_correctedDepthDU;
+	CACTList m_cACTList;
+	DPM_DISPLAY_PARA m_dpmDisplayPara;
+	CWorkMode m_cWorkMode;
+	CDataFileBuffer m_cDataFileBuffer;
+
+	long m_timeMS = 0;
+	long m_speedDUPM = 0;
+	long m_speedDUPS = 0;
+	long m_trueDepthDU = 0;
+	long m_correctedDepthDU = 0;
 
 	DWORD m_socketThreadID;
 	
@@ -56,17 +75,10 @@ public:
 	inline void SetSocketThreadID(DWORD tid){
 		m_socketThreadID = tid;
 	}
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CCommandHandlerThread)
-	public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
-	//}}AFX_VIRTUAL
-
-// Implementation
-public:
 	inline void PreProcessMasterData(CMasterData *md);
+	void SubsetDataTimerProc();
+	void DepthDataTimerProc();
+	void WorkModeProc();
 	void NetCmd_InitServiceTable();
 	void NetCmd_CalibPara();
 	void NetCmd_CalibStart();
@@ -95,6 +107,18 @@ public:
 	void NetCmd_DepthTensionAngle();
 	void NetCmd_DepthCHT();
 
+// Overrides
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CCommandHandlerThread)
+	public:
+	virtual BOOL InitInstance();
+	virtual int ExitInstance();
+	//}}AFX_VIRTUAL
+
+// Implementation
+public:
+	
+
 protected:
 	virtual ~CCommandHandlerThread();
 
@@ -102,6 +126,9 @@ protected:
 	//{{AFX_MSG(CCommandHandlerThread)
 	afx_msg VOID OnCommand(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID CALLBACK OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+	afx_msg VOID OnDataBuf(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnACTRoot(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnCALVERRoot(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 	
 

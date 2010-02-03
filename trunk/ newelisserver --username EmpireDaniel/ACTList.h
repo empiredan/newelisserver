@@ -107,8 +107,8 @@ private:
 	int m_commonDepthSampleRate;
 	int m_commonTimeInterval;
 
-	int m_timeDeltaOfDepthMode;
-	int m_timeDeltaOfTimeMode;
+	int m_timeMSDeltaOfDepthMode;//ms
+	int m_timeMSDeltaOfTimeMode;
 	long m_depthDUDelta;
 	
 	/**-----------------------------------------------------------------**/
@@ -129,19 +129,26 @@ private:
 //Operations
 public:
 	void Init(BUF_TYPE * bodyBuf, ULONG bodyLen);
-	inline void SetTimeDeltaOfDepthMode(long speed){
-		speed/= 60;
+	inline void SetTimeDeltaOfDepthMode(long speedps){
 		
-		if (m_actList.nDepthInterruptMode)
+		if (speedps)
 		{
-			m_timeDeltaOfDepthMode = 1000*METRIC_DU		\
-			/(speed*m_commonDepthSampleRate)+0.5;
+			if (m_actList.nDepthInterruptMode)
+			{
+				m_timeMSDeltaOfDepthMode = 1000*METRIC_DU		\
+					/(speedps*m_commonDepthSampleRate)+0.5;
+			} 
+			else
+			{
+				m_timeMSDeltaOfDepthMode = 1000*IMPERIAL_DU	\
+					/(speedps*m_commonDepthSampleRate)+0.5;
+			}
 		} 
 		else
 		{
-			m_timeDeltaOfDepthMode = 1000*IMPERIAL_DU	\
-			/(speed*m_commonDepthSampleRate)+0.5;
+			m_timeMSDeltaOfDepthMode = 0;
 		}
+		
 		
 	}
 	inline void SetDepthDuDeltaWithDirection(int direction){
@@ -162,14 +169,14 @@ public:
 	inline ULONG GetACTNum(){
 		return m_actList.actNum;
 	}
-	inline int GetTimeDelta(UINT32 workMode){
+	inline int GetTimeMSDelta(UINT32 workMode){
 		if (workMode == RtcSYS_STANDBY_CMD)
 		{
-			return m_timeDeltaOfTimeMode;
+			return m_timeMSDeltaOfTimeMode;
 		}
 		else if(workMode == RtcSYS_RECSTART_CMD)
 		{
-			return m_timeDeltaOfDepthMode;
+			return m_timeMSDeltaOfDepthMode;
 		}
 		return 0;
 	}
@@ -177,7 +184,7 @@ public:
 		return m_depthDUDelta;
 	}
 	/*----------------------------------------------------------------*/
-	inline ULONG GetTotalSubsetDataLen(ULONG i, UINT32 workMode){
+	inline ULONG GetTotalSubsetDataLen(UINT32 workMode){
 		if (workMode == RtcSYS_STANDBY_CMD)
 		{
 			return m_totalReturnedSubsetDataLenOfTimeMode;
@@ -223,6 +230,23 @@ public:
 			return m_subsetOfDepthMode[i].percentateOfDataFileBuf;
 		}
 		return 0;
+	}
+	inline SubsetData * GetSubsetData(UINT32 workMode){
+		if (workMode == RtcSYS_STANDBY_CMD)
+		{
+			return m_subsetOfTimeMode;
+		}
+		else if(workMode == RtcSYS_RECSTART_CMD)
+		{
+			return m_subsetOfDepthMode;
+		}
+		return (SubsetData *)0;
+
+	}
+	inline int GetOneSubsetLen(ULONG i){
+		
+		return m_subsetOfTimeMode[i].rtcBlockDataHeader.dataSize;
+		
 	}
 };
 

@@ -47,7 +47,7 @@ public:
 	CFrontData(ULONG totalLen);
 	virtual ~CFrontData();
 	
-	inline void SetHeadOfBuf(ULONG cmdType, ULONG totalLen, ULONG headLen){
+	inline void SetHeadOfBuf(ULONG cmdType, ULONG headLen){
 		/*
 		memcpy(m_pBuf, &((BUF_TYPE)cmdType), sizeof(ULONG));
 		m_pBuf+= sizeof(ULONG);
@@ -56,7 +56,7 @@ public:
 		*/
 		ULONG * head = (ULONG *)m_pBuf;
 		head[0] = cmdType;
-		head[1] = totalLen;
+		head[1] = m_totalLen;
 		m_pBuf+= headLen;
 	}
 	inline void SetBodyOfBuf(BUF_TYPE * sectionBuf, ULONG sectionLen){

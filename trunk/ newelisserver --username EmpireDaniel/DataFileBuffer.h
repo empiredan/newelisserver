@@ -10,9 +10,13 @@
 #endif // _MSC_VER > 1000
 
 #include "commands.h"
+#include "ACTList.h"
+
 
 typedef struct{
 	//float percentageOfBlock;
+	int subsetLen;
+	ULONG allSubsetsOfOneToolSubset;
 	ULONG blockLen;
 	BUF_TYPE * headOfBlock;
 	BUF_TYPE * curPosOfBlock;
@@ -38,8 +42,34 @@ private:
 
 //Operations
 public:
-	void Init(ULONG bufLen, ULONG numOfBlocks, float * percentageOfBlock, \
-	ULONG * returnedSectionLenForOneTime, CString * filePath);
+	inline void SetNumOfBlocks(ULONG nBlocks){
+		m_numOfBlocks = nBlocks;
+		if (m_blocks)
+		{
+			delete []m_blocks;
+		}
+		m_blocks = new BUF_TYPE[m_numOfBlocks];
+	}
+	inline void SetBufferLen(ULONG bufLen){
+		m_bufferLen = bufLen;
+		if (m_buffer)
+		{
+			delete []m_buffer;
+		}
+		m_buffer = new BUF_TYPE[bufLen];
+	}
+	void Init(SubsetData * subsetData);
+	inline BUF_TYPE * GetCurrentPositionOfBlock(ULONG i){
+		return m_blocks[i].curPosOfBlock;
+	}
+	void NextPositionOfBlock(ULONG i){
+		m_blocks[i].curPosOfBlock+= m_blocks[i].allSubsetsOfOneToolSubset;
+		if (m_blocks[i].curPosOfBlock >= m_blocks[i].headOfBlock+m_blocks[i].blockLen)
+		{
+			WriteBlock(i);
+			m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
+		}
+	}
 	void WriteAllBlocks();
 	inline void WriteBlock(ULONG i);
 	inline void WriteBlocksByReadFile(ULONG i);

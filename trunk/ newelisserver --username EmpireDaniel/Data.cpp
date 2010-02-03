@@ -61,6 +61,7 @@ CFrontData::CFrontData(ULONG totalLen)
 {
 	m_totalBuf = new BUF_TYPE[totalLen+10];
 	m_pBuf = m_totalBuf;
+	m_totalLen = totalLen;
 }
 
 CFrontData::~CFrontData() {
