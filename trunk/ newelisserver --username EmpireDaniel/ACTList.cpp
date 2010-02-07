@@ -163,6 +163,10 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 		m_subsetOfDepthMode[i].allSubsetsLenOfOneToolSubset =		\
 		(ULONG)m_subsetOfDepthMode[i].rtcBlockDataHeader.dataSize	\
 		* m_subsetOfDepthMode[i].rtcBlockDataHeader.subsetCnt;
+
+		m_subsetOfDepthMode[i].status = SetStatus(i);
+
+		m_subsetOfDepthMode[i].time = 10000;
 		
 		m_totalReturnedSubsetDataLenOfDepthMode+=								\
 		m_subsetOfDepthMode[i].allSubsetsLenOfOneToolSubset;
@@ -215,6 +219,10 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 		m_subsetOfTimeMode[i].allSubsetsLenOfOneToolSubset =		\
 		(ULONG)m_subsetOfTimeMode[i].rtcBlockDataHeader.dataSize	\
 		* m_subsetOfTimeMode[i].rtcBlockDataHeader.subsetCnt;
+
+		m_subsetOfTimeMode[i].status = SetStatus(i);
+		
+		m_subsetOfTimeMode[i].time = 10000;
 		
 		m_totalReturnedSubsetDataLenOfTimeMode+=								\
 		m_subsetOfTimeMode[i].allSubsetsLenOfOneToolSubset;
