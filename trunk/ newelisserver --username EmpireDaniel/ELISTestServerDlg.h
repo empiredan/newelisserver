@@ -8,126 +8,72 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-//#include <windows.h>
-//#include "MasterHeader.h"
+
 #include "MyTabCtrl.h"
-#include "MySocket.h"
-#include "Data.h"
-#include "Queue.h"
-#include "MessageSender.h"
+//#include "Queue.h"
 #include "commands.h"
-#include "CommandHandler.h"
+//#include "CalibParameter.h"
+//#include "CalibSubset.h"
 
-#include "Utils.h"
-#include "ActTable.h"
-#include "CalibParameter.h"
-#include "WorkModeSetter.h"
-#include "CalibSubset.h"
-#include "DPMDisplayParameter.h"
-#include "TimerDef.h"
 
-#include "SubsetDataAssister.h"
-#include "DataFileBuf.h"
-//#include "DealThread.h"
-//#include <deque>
-//using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 // CELISTestServerDlg dialog
 #define FLOAT_TO_STRING_FORMAT "%10.2f"
+
+#define WM_WORKMODE WM_USER+20
+#define WM_DIRECTION WM_USER+21
+#define WM_DEPTH WM_USER+22
+#define WM_SPEED WM_USER+23
+#define WM_TIME WM_USER+24
+
 
 class CELISTestServerDlg : public CDialog
 {
 // Construction
 public:
 	void EnableActRootFolderSelection(BOOL enableButton);
-	float m_depthDelta_toM;
-	float m_depthDelta_toImp;
-	float m_depthDelta_Consistency;
-	long m_depthDUDelta;
-	float m_timeDelta; //second
-	void updateCorrectedDepth(float delta);
-	void updateTrueDepth(float delta);
-	void updateCurrentTime(float delta);
-	//BOOL m_isCorrectedDepthReceived;
-	//BOOL m_isTrueDepthReceived;
-	//BOOL m_isSpeedReceived;
-	void setCorrectedDepth(BUF_TYPE *buf, ULONG len);
-	void setSpeed(BUF_TYPE *buf, ULONG len);
-	void setTrueDepth(BUF_TYPE* buf, ULONG len);
-	void fillDataFileBufWithAct();
-	void fillDataFileBufWithCalVer();
-	//UINT getCurrentDepthDU();
-	//int getMeasure();
+	void EnableCreateLog(BOOL enableButton);
+	void EnableStopLog(BOOL enableButton);
 	CELISTestServerDlg(CWnd* pParent = NULL);	// standard constructor
 	virtual ~CELISTestServerDlg();
 
 	UINT m_sPort;
-	MySocket m_sListenSocket;
-	MySocket* m_psConnectSocket;
-	UINT m_rStatus;
 
 	CString m_actListRootFolder;
 	CString m_calverListRootFolder;
 
-	ULONG m_bodyLen;
-	ULONG m_msDataLen;
-	ULONG m_rbuflen;
-	BUF_TYPE *m_rbuf, *pBuf;
-	ULONG rremain, received;
-
-
 	CSocketThread * m_socketThread;
 	CCommandHandlerThread * m_cmdHandlerThread;
-
+/*
 	MasterDataQueue<CMasterData>* m_pmasterDataQueue;
-	//MasterDataQueue<CMasterData> mq;
 	FrontDataQueue<CFrontData> fq;
-	CCommandHandler cmdh;
-	CMessageSender msgs;
-	CActTable *acttab;
-	CCalibParameter *calibpara;
-	CWorkModeSetter *wms;
-	unsigned char ta;
-
-	CCalibSubset* calibsubset;
-
+*/
 	ULONG m_dataFileBufSize;
 
-    CString m_currentWorkStateStr;
+    CString m_workModeStr;
+	UINT32 m_workMode;
 	CString m_directionStr;
+	UINT32 m_direction;
 
-	long m_speedDU;// DU per minute
-	float m_speed;// per minute
-	CString m_speedStr;//per minute
+	long m_speedDUPM;// DU per minute
+	float m_speedPM;// per minute
+	CString m_speedPMStr;//per minute
 
-	long m_trueDepthDU; //DU
-	float m_trueDepth; //according to unit system
-	CString m_trueDepthStr; //according to unit system
-
-	long m_correctedDepthDU; //DU
-	float m_correctedDepth; //according to unit system
-	CString m_correctedDepthStr; //according to unit system
-
-	//CString m_currentDepthStr;
-	//long m_currentDepthDU;
+	long m_depthDU; //DU
+	float m_depth; //according to unit system
+	CString m_depthStr; //according to unit system
 	
-	CString m_currentTimeStr;
-	float m_currentTime; // second
+	CString m_timeSStr;
+	float m_timeS; // second
 	
 	int m_measure;
-
-	CSubsetDataAssister* m_subsetAssister;
-	CDataFileBuf* m_dataFileBuf;
-
+	
 	CFile log;
-
-	void OnReceive();
-	void OnAccept();
-	void OnClose();
-
+/*
 	MasterDataQueue<CMasterData>* getMasterDataQueue() {
 		return m_pmasterDataQueue;
 	}
+
 	void CreateTimer(UINT_PTR nIDEvent, UINT uElapse);
 	void CreateLogTimer(UINT uElapse);
 	void CreateDepthTimer(UINT uElapse);
@@ -146,20 +92,21 @@ public:
 
 	void SetCurrentWorkState();
 	void SetDirection();
+		*/
 	//void SetCurrentTestTime(float ct);
 	//void SetCurrentDepth(float cp);
 	//float GetCurrentDepth();
 	//UINT GetCurrentTestTime();
 
 	//void EnableStartLog(BOOL enableButton);
-	void EnableCreateLog(BOOL enableButton);
-	void EnableStopLog(BOOL enableButton);
+	
 	//void EnableUnitRadio(BOOL enableButton);
 	//void EnableStartRelog(BOOL enableButton);
-
+/*
 	void getCalibSubset();//CCalibSubset* 
 
 	void HandleWorkStateChange();
+	*/
 	//DWORD WINAPI WriteCmdRecvQueFunc(LPVOID lpParameter);
 
 // Dialog Data
@@ -192,17 +139,24 @@ protected:
 	afx_msg void OnButtonCancel();
 	afx_msg void OnSelchangeElistestserverTab(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnButtonActFolder();
-	afx_msg void OnTimer(UINT nIDEvent);
+	//afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnButtonServerPort();
 	afx_msg void OnButtonCalverFolder();
 	afx_msg void OnButtonDataBufferSize();
-	//afx_msg void OnButtonSpeed();
-	//afx_msg void OnButtonStartLog();
-	//afx_msg void OnButtonTrueDepth();
 	afx_msg void OnRadioImperial();
 	afx_msg void OnRadioMetric();
 	afx_msg void OnButtonCreateLog();
 	afx_msg void OnButtonStopLog();
+
+	afx_msg VOID OnWorkModeUpdated(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnDirectionUpdated(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnDepthUpdated(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnSpeedUpdated(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnTimeUpdated(WPARAM wParam, LPARAM lParam);
+
+	afx_msg VOID OnServerIP(WPARAM wParam, LPARAM lParam);
+	
+
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
