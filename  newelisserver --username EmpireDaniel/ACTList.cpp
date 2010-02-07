@@ -77,11 +77,11 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	}
 	if (m_actList.nDepthInterruptMode)
 	{
-		m_depthDUDelta = METRIC_DU/m_commonDepthSampleRate;
+		m_depthDUDeltaOfDepthMode = METRIC_DU/m_commonDepthSampleRate;
 	} 
 	else
 	{
-		m_depthDUDelta = IMPERIAL_DU/m_commonDepthSampleRate;
+		m_depthDUDeltaOfDepthMode = IMPERIAL_DU/m_commonDepthSampleRate;
 	}
 	/**---------------------------------------------------------**/
 

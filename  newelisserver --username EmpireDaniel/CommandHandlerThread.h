@@ -64,8 +64,9 @@ private:
 	long m_timeMS = 0;
 	long m_speedDUPM = 0;
 	long m_speedDUPS = 0;
-	long m_trueDepthDU = 0;
-	long m_correctedDepthDU = 0;
+	long m_depthDU;
+//	long m_trueDepthDU = 0;
+//	long m_correctedDepthDU = 0;
 
 	DWORD m_socketThreadID;
 	
