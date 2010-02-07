@@ -86,6 +86,8 @@ typedef struct{
 typedef struct{
 	//public:
 	RtcBLOCK_DATA_HEADER rtcBlockDataHeader;
+	long status;
+	long time;
 	ULONG allSubsetsLenOfOneToolSubset;
 	float percentateOfDataFileBuf;
 }SubsetData;
@@ -165,7 +167,12 @@ public:
 		RETURNED_M_LEN(m7, m_actList.pSaList[i].m7Length)
 		return 2*sizeof(long)+m2+m5+m7;
 	}
-	
+	inline long SetStatus(ULONG i){
+		return												\
+		(m_actList.pSaList[i].m2Length>0 ? RtcM2NVM : 0)	\
+		| (m_actList.pSaList[i].m5Length>0 ? RtcM5NVM : 0)	\										
+		| (m_actList.pSaList[i].m7Length>0 ? RtcM7NVM : 0);	\
+	}
 	inline ULONG GetACTNum(){
 		return m_actList.actNum;
 	}

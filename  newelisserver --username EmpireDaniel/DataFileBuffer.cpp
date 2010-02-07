@@ -55,8 +55,12 @@ void CDataFileBuffer::Init(SubsetData * subsetData)
 		m_blocks[i].curPosOfBlock = curPosOfBuffer;
 
 		m_blocks[i].dataFilePath = "";
+
+		m_blocks[i].status = subsetData[i].status;
+
+		m_blocks[i].time = subsetData[i].time;
 		
-		//m_blocks[i].statusTypeLen = sizeof(long);
+		m_blocks[i].statusTypeLen = sizeof(long);
 
 		m_blocks[i].curPosOfDataFile = m_dataFileHeadLen;
 
@@ -159,9 +163,11 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 
 	for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
 	{
-		memset(pBlock, 0, statusTypeLen);
+		memcpy(pBlock, (BUF_TYPE *)m_blocks[i].status, statusTypeLen);
 		pBlock+= statusTypeLen;
-		BUF_TYPE * subsetEnd = pBlock+m_blocks[i].subsetLen;
+		memcpy(pBlock, (BUF_TYPE *)m_blocks[i].time, statusTypeLen);
+		pBlock+= statusTypeLen;
+		BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].subsetLen-2*statusTypeLen);
 		for ( ; pBlock < subsetEnd; pBlock++)
 		{
 			memset(pBlock, rand()%256, 1);

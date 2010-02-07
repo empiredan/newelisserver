@@ -23,7 +23,9 @@ typedef struct{
 	CString dataFilePath;
 	//ULONG dataFileLen;
 	CFile dataFile;
-	//ULONG statusTypeLen;
+	long status;
+	long time;
+	ULONG statusTypeLen;
 	ULONG curPosOfDataFile;
 }Block;
 
@@ -83,10 +85,10 @@ public:
 	inline void SetDataFilePathOfBlock(ULONG i, CString filePath){
 		m_blocks[i].dataFilePath = filePath; 
 	}
-	/*
+	
 	inline void SetStatusTypeLen(ULONG i, ULONG typelen){
 		m_blocks[i].statusTypeLen = typelen;
-	}*/
+	}
 };
 
 #endif // !defined(AFX_DATAFILEBUFFER_H__45AAC7E8_2A0D_44F4_817B_7A08A9066CED__INCLUDED_)
