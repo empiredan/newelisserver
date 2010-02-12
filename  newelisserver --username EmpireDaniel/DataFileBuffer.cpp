@@ -38,6 +38,8 @@ CDataFileBuffer::~CDataFileBuffer()
 void CDataFileBuffer::Init(SubsetData * subsetData)
 {
 
+	m_mode = 0;
+
 	//m_blocks[0] = m_buffer;
 	m_dataFileHeadLen = 3*sizeof(UINT32);
 	BUF_TYPE * curPosOfBuffer = m_buffer;
@@ -45,10 +47,10 @@ void CDataFileBuffer::Init(SubsetData * subsetData)
 	{
 		m_blocks[i].subsetLen = subsetData[i].rtcBlockDataHeader.dataSize;
 
-		m_blocks[i].allSubsetsOfOneToolSubset = subsetData[i].allSubsetsLenOfOneToolSubset;
+		m_blocks[i].allSubsetsLenOfOneToolSubset = subsetData[i].allSubsetsLenOfOneToolSubset;
 		
 		m_blocks[i].blockLen = ((float)m_bufferLen*subsetData[i].percentateOfDataFileBuf	\
-		/m_blocks[i].allSubsetsOfOneToolSubset)*m_blocks[i].allSubsetsOfOneToolSubset;
+		/subsetData[i].allSubsetsLenOfOneToolSubset)*subsetData[i].allSubsetsLenOfOneToolSubset;
 
 		m_blocks[i].headOfBlock = curPosOfBuffer;
 

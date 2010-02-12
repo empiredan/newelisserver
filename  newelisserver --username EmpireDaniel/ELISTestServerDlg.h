@@ -14,7 +14,8 @@
 #include "commands.h"
 //#include "CalibParameter.h"
 //#include "CalibSubset.h"
-
+#include "CommandHandlerThread.h"
+#include "SocketThread.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CELISTestServerDlg dialog

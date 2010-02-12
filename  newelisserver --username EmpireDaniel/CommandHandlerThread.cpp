@@ -188,7 +188,8 @@ VOID CCommandHandlerThread::OnDataBuf(WPARAM wParam, LPARAM lParam)
 }
 VOID CCommandHandlerThread::OnACTRoot(WPARAM wParam, LPARAM lParam)
 {
-
+	m_actRootPath = (CString)lParam;
+	
 }
 VOID CCommandHandlerThread::OnCALVERRoot(WPARAM wParam, LPARAM lParam)
 {
