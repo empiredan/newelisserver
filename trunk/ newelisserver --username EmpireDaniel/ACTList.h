@@ -28,17 +28,19 @@
 
 //A can be used as the GREAT COMMON DENOMINATOR
 #define GREAT_COMMON_DENOMINATOR(A, B) \  
-	while (A != B)				\
-	{							\	
-		B = A+B;				\
-		A = B-A;				\
-		B = abs(B-A-A);			\
-		if (A == 1 || B == 1)	\
-		{						\
-			A = 1;				\
-			break;				\
-		}						\
-	}
+								\
+		while (A != B)				\
+		{							\	
+			B = A+B;				\
+			A = B-A;				\
+			B = abs(B-A-A);			\
+			if (A == 1 || B == 1)	\
+			{						\
+				A = 1;				\
+				break;				\
+			}						\
+		}							\
+
 
 //#define AXB(A, B) A*B
 
@@ -177,9 +179,9 @@ public:
 	}
 	inline long SetStatus(ULONG i){
 		return												\
-		(m_actList.pSaList[i].m2Length>0 ? RtcM2NVM : 0)	\
-		| (m_actList.pSaList[i].m5Length>0 ? RtcM5NVM : 0)	\										
-		| (m_actList.pSaList[i].m7Length>0 ? RtcM7NVM : 0);	\
+		((m_actList.pSaList[i].m2Length>0 ? RtcM2NVM : 0)	\
+		| (m_actList.pSaList[i].m5Length>0 ? RtcM5NVM : 0))	\
+		| (m_actList.pSaList[i].m7Length>0 ? RtcM7NVM : 0);	
 	}
 	inline void SetWorkMode(UINT32 workMode){
 		m_cWorkMmode = workMode;

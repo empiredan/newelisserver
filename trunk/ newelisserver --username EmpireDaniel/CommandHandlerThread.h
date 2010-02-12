@@ -55,6 +55,7 @@ private:
 	ULONG m_bodyLen;
 
 	ULONG m_bufferLen = 0;
+	CString m_actRootPath;
 
 	CACTList m_cACTList;
 	DPM_DISPLAY_PARA m_dpmDisplayPara;
