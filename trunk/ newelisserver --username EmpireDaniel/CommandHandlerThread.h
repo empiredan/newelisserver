@@ -54,7 +54,7 @@ private:
 	//Head of body
 	ULONG m_bodyLen;
 
-	ULONG m_bufferLen = 0;
+	ULONG m_bufferLen;
 	CString m_actRootPath;
 
 	CACTList m_cACTList;
@@ -62,24 +62,27 @@ private:
 	CWorkMode m_cWorkMode;
 	CDataFileBuffer m_cDataFileBuffer;
 
-	long m_timeMS = 0;
-	long m_speedDUPM = 0;
-	long m_speedDUPS = 0;
+	long m_timeMS;
+	long m_speedDUPM;
+	long m_speedDUPS;
 	long m_depthDU;
 //	long m_trueDepthDU = 0;
 //	long m_correctedDepthDU = 0;
 
 	DWORD m_socketThreadID;
+
+	static void * m_pObject;
 	
 // Operations
 public:
 	void Init();
+	static VOID CALLBACK OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	inline void SetSocketThreadID(DWORD tid){
 		m_socketThreadID = tid;
 	}
 	inline void PreProcessMasterData(CMasterData *md);
-	void SubsetDataTimerProc();
-	void DepthDataTimerProc();
+	VOID CALLBACK SubsetDataTimerProc();
+	VOID CALLBACK DepthDataTimerProc();
 	void WorkModeProc();
 	void NetCmd_InitServiceTable();
 	void NetCmd_CalibPara();
@@ -127,7 +130,6 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CCommandHandlerThread)
 	afx_msg VOID OnCommand(WPARAM wParam, LPARAM lParam);
-	afx_msg VOID CALLBACK OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	afx_msg VOID OnDataBuf(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnACTRoot(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnCALVERRoot(WPARAM wParam, LPARAM lParam);

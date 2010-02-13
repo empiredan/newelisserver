@@ -33,6 +33,7 @@ public:
 		m_cmdThreadID = tid;
 		m_connectSocket.SetCmdHandlerThreadID(tid);
 	}
+	
 	inline CMyConnectSocket GetConnectSocket(){
 		return m_connectSocket;
 	}

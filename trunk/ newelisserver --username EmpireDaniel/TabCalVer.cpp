@@ -7,8 +7,7 @@
 #include "ELISTestServerDlg.h"
 
 #include "MyTabCtrl.h"
-#include "CalibParameter.h"
-#include "ActTable.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

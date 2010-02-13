@@ -16,6 +16,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread
 
@@ -43,13 +44,19 @@ int CCommandHandlerThread::ExitInstance()
 
 void CCommandHandlerThread::Init()
 {
-	
+	ULONG m_bufferLen = 0;
+
+	long m_timeMS = 0;
+	long m_speedDUPM = 0;
+	long m_speedDUPS = 0;
+
+	m_pObject = this;
 }
 
 BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	//{{AFX_MSG_MAP(CCommandHandlerThread)
 	ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
-	ON_THREAD_MESSAGE(WM_TIMER, OnTimerProc)
+	//ON_THREAD_MESSAGE(WM_TIMER, OnTimerProc)
 	ON_THREAD_MESSAGE(WM_DATABUF, OnDataBuf)
 	ON_THREAD_MESSAGE(WM_ACTROOT, OnACTRoot)
 	ON_THREAD_MESSAGE(WM_CALVERROOT, OnCALVERRoot)
@@ -61,20 +68,21 @@ END_MESSAGE_MAP()
 // CCommandHandlerThread message handlers
 VOID CALLBACK CCommandHandlerThread::OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
+	CCommandHandlerThread * cmdHandlerThread = (CCommandHandlerThread *)m_pObject;
 	switch (idEvent)
 	{
 	case SUBSET_DATA_TIMER:
-		SubsetDataTimerProc();
+		cmdHandlerThread->SubsetDataTimerProc();
 		break;
 	case DEPTH_DATA_TIMER:
-		DepthDataTimerProc();
+		cmdHandlerThread->DepthDataTimerProc();
 		break;
 	default:
 		break;
 	}
 	
 }
-void CCommandHandlerThread::SubsetDataTimerProc()
+VOID CALLBACK CCommandHandlerThread::SubsetDataTimerProc()
 {
 	switch (m_cWorkMode.GetWorkMode())
 	{
@@ -86,38 +94,39 @@ void CCommandHandlerThread::SubsetDataTimerProc()
 		::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
 		
 	case RtcSYS_STANDBY_CMD:
-		m_timeMS+= m_cACTList.GetTimeMSDelta();
-		//Send the time to the Dialog for showing
-		::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
-		//Send to the socket thread the data ready to be 
-		//returned to ELIS Client 
-		
-		CFrontData * fData = new CFrontData(m_cACTList.GetTotalSubsetDataLen());
-		fData->SetHeadOfBuf(NET_RETURN_SUBSETDATA, m_headLen);
-		ULONG totalState = 0;
-		fData->SetBodyOfBuf((BUF_TYPE *)&totalState, sizeof(ULONG));
-		for (ULONG i = 0; i <m_cACTList.GetACTNum(); i++)
 		{
-			m_cACTList.SetCurrentDepthOfSubsetData(i, m_depthDU);
-			m_cACTList.SetCurrentTimeOfSubsetData(i, m_timeMS);
-			fData->SetBodyOfBuf(m_cACTList.GetRtcBlockDataHeader(i),			\
-			m_cACTList.GetRtcBlockDataHeaderLen());
+			m_timeMS+= m_cACTList.GetTimeMSDelta();
+			//Send the time to the Dialog for showing
+			::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
+			//Send to the socket thread the data ready to be 
+			//returned to ELIS Client 
+			
+			CFrontData * fData = new CFrontData(m_cACTList.GetTotalSubsetDataLen());
+			fData->SetHeadOfBuf(NET_RETURN_SUBSETDATA, m_headLen);
+			ULONG totalState = 0;
+			fData->SetBodyOfBuf((BUF_TYPE *)&totalState, sizeof(ULONG));
+			for (ULONG i = 0; i <m_cACTList.GetACTNum(); i++)
+			{
+				m_cACTList.SetCurrentDepthOfSubsetData(i, m_depthDU);
+				m_cACTList.SetCurrentTimeOfSubsetData(i, m_timeMS);
+				fData->SetBodyOfBuf((BUF_TYPE *)&m_cACTList.GetRtcBlockDataHeader(i),			
+				m_cACTList.GetRtcBlockDataHeaderLen());
 
-			fData->SetBodyOfBuf(m_cDataFileBuffer.GetCurrentPositionOfBlock(i),	\
-			m_cACTList.GetAllSubsetsLenOfOneToolSubset(i));
+				fData->SetBodyOfBuf(m_cDataFileBuffer.GetCurrentPositionOfBlock(i),	
+				m_cACTList.GetAllSubsetsLenOfOneToolSubset(i));
 
-			m_cDataFileBuffer.NextPositionOfBlock(i);
+				m_cDataFileBuffer.NextPositionOfBlock(i);
+			}
+			::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
+
+
+			break;
 		}
-		::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, fData);
-
-
-		break;
-
 	default:
 		break;
 	}
 }
-void CCommandHandlerThread::DepthDataTimerProc()
+VOID CALLBACK CCommandHandlerThread::DepthDataTimerProc()
 {
 	//m_dpmDisplayPara.corr_Depth = m_correctedDepthDU;
 	//m_dpmDisplayPara.true_Depth = m_trueDepthDU;
@@ -135,7 +144,7 @@ void CCommandHandlerThread::DepthDataTimerProc()
 	fData->SetHeadOfBuf(NET_RETURN_DPMPARA, m_headLen);
 	fData->SetBodyOfBuf((BUF_TYPE *)&m_dpmDisplayPara, sizeof(DPM_DISPLAY_PARA));
 
-	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, fData);
+	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 }
 void CCommandHandlerThread::WorkModeProc()
 {
@@ -168,6 +177,7 @@ void CCommandHandlerThread::WorkModeProc()
 			//so that the subset data can be returned to ELIS client
 			::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, 0);
 			::SetTimer(NULL, SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)OnTimerProc);
+			
 		}
 
 		/*if (m_cWorkMode.GetOldWorkMode() == NET_CMD_NA)
@@ -355,7 +365,7 @@ inline void CCommandHandlerThread::PreProcessMasterData(CMasterData *md)
 
 void CCommandHandlerThread::NetCmd_InitServiceTable() {
 	
-	m_cACTList.Init(m_bodyBuf);
+	m_cACTList.Init(m_bodyBuf, m_bodyLen);
 	m_cDataFileBuffer.SetNumOfBlocks(m_cACTList.GetACTNum());
 
 	//Send the "show ACT list" message to Dialog
@@ -413,6 +423,7 @@ void CCommandHandlerThread::NetCmd_CalibStart() {
 	//sprintf(logdata, "CCommandHandler::NetCmd_CalibStart, returned one calib subset data\n");
 	//dlg->log.Write(logdata, strlen(logdata));
 	//dlg->log.Flush();
+	*/
 }
 /*
 void CCommandHandlerThread::NetCmd_CalibStop() {

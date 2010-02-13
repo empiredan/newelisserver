@@ -18,11 +18,22 @@ static char THIS_FILE[] = __FILE__;
 
 CMyConnectSocket::CMyConnectSocket()
 {
+	m_rcvStatus = SOCK_RECEIVE_HEADER;
 	
+	m_receivedLen = 0;
+
+	m_headLen = SOCK_RECEIVE_HEADER_LEN;
+
+	m_bodyBuf = NULL;
 }
 
 CMyConnectSocket::~CMyConnectSocket()
 {
+	if (m_bodyBuf)
+	{
+		delete [] m_bodyBuf;
+		m_bodyBuf = NULL;
+	}
 }
 
 
@@ -57,7 +68,12 @@ void CMyConnectSocket::OnReceive(int nErrorCode)
 					m_cmdType = ntohl(head[0]);
 					m_totalLen = ntohl(head[1]);
 					m_bodyLen = m_totalLen - m_headLen;
-					
+					if (m_bodyBuf)
+					{
+						delete [] m_bodyBuf;
+						m_bodyBuf = NULL;
+					}
+					m_bodyBuf = new BUF_TYPE[m_bodyLen+10];
 					m_rcvStatus = SOCK_RECEIVE_BODY;
 					m_receivedLen = 0;
 					
@@ -76,7 +92,7 @@ void CMyConnectSocket::OnReceive(int nErrorCode)
 				if(m_receivedLen == m_bodyLen) {
 					
 					CMasterData * mData=new CMasterData(m_cmdType, m_totalLen, m_headLen, m_bodyBuf, m_bodyLen);
-					::PostThreadMessage(m_cmdThreadID, WM_COMMAND_DATA, NULL, mData);
+					::PostThreadMessage(m_cmdThreadID, WM_COMMAND_DATA, NULL, (LPARAM)mData);
 					m_rcvStatus = SOCK_RECEIVE_HEADER;
 					m_receivedLen = 0;
 				} 
