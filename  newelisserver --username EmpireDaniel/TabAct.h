@@ -28,10 +28,10 @@ public:
 	MyTabCtrl* m_ptabCtrl;
 	CELISTestServerDlg* m_pELISTestServerDlg;
 	//}}AFX_DATA
-	void setTabCtrl(MyTabCtrl* tab);
-	void setACTTable(CActTable* acttbl);
+	//void setTabCtrl(MyTabCtrl* tab);
+	//void setACTTable(CActTable* acttbl);
 	void setCElisTestServerDlg(CELISTestServerDlg* dlg);
-	void setDataFilePath(CString rootFolder, UINT i);
+	//void setDataFilePath(CString rootFolder, UINT i);
 
 // Overrides
 	// ClassWizard generated virtual function overrides

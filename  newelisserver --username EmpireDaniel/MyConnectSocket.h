@@ -6,9 +6,11 @@
 #endif // _MSC_VER > 1000
 // MyConnectSocket.h : header file
 //
-
+//#include <windows.h>
 //#include "CommandHandlerThread.h"
 #include "commands.h"
+
+//using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 // CMyConnectSocket command target
 
@@ -22,9 +24,9 @@ private:
 	DWORD m_cmdThreadID;
 
 	//Receiving status
-	UINT m_rcvStatus = SOCK_RECEIVE_HEADER;
+	UINT m_rcvStatus;
 	
-	ULONG m_receivedLen = 0;
+	ULONG m_receivedLen;
 	
 	BUF_TYPE m_headBuf[SOCK_RECEIVE_HEADER_LEN+10];
 	
@@ -32,7 +34,7 @@ private:
 	ULONG m_cmdType;
 	ULONG m_totalLen;
 	//Size of head
-	ULONG m_headLen = SOCK_RECEIVE_HEADER_LEN;
+	ULONG m_headLen;
 	//Body of received data	
 	BUF_TYPE * m_bodyBuf;
 	//Head of body
@@ -41,6 +43,19 @@ private:
 // Operations
 public:
 	CMyConnectSocket();
+	CMyConnectSocket(const CMyConnectSocket& connectSocket){
+
+		m_cmdThreadID = connectSocket.m_cmdThreadID;
+		m_rcvStatus = connectSocket.m_rcvStatus;
+		m_receivedLen = connectSocket.m_receivedLen;
+		memcpy(m_headBuf, connectSocket.m_headBuf, SOCK_RECEIVE_HEADER_LEN+10);
+		m_cmdType = connectSocket.m_cmdType;
+		m_totalLen = connectSocket.m_totalLen;
+		m_headLen = connectSocket.m_headLen;
+		m_bodyBuf = connectSocket.m_bodyBuf;
+		m_bodyLen = connectSocket.m_bodyLen;
+
+	}
 	virtual ~CMyConnectSocket();
 	inline void SetCmdHandlerThreadID(DWORD tid){
 		//m_cmdHandlerThread = cmdHThread;

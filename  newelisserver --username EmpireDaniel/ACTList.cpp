@@ -18,7 +18,7 @@ static char THIS_FILE[]=__FILE__;
 
 CACTList::CACTList()
 {
-
+	m_actList.pSaList = NULL;
 }
 
 CACTList::~CACTList()
@@ -55,12 +55,12 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 		delete []m_actList.pSaList;
 		m_actList.pSaList = NULL;
 	}
-	m_actList.pSaList = new BUF_TYPE[m_actList.actNum];
+	m_actList.pSaList = new RTCSubset[m_actList.actNum];
 	memcpy(m_actList.pSaList, bodyBuf+sizeof(ULONG)*2, bodyLen-sizeof(ULONG)*2);
 	UINT i;
 	for (i = 0; i < m_actList.actNum; i++)
 	{
-		NET_TO_HOST_LONG(m_actList.pSaList[i])
+		net_to_host_long(m_actList.pSaList[i]);
 	}
 	/**---------------------------------------------------------**/
 
@@ -73,7 +73,7 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	for (i = 1; i < m_actList.actNum; i++)
 	{
 		int b = m_actList.pSaList[i].depthSampleRate;
-		GREAT_COMMON_DENOMINATOR(m_commonDepthSampleRate, b)
+		great_common_denominator(m_commonDepthSampleRate, b);
 	}
 	if (m_actList.nDepthInterruptMode)
 	{
@@ -93,7 +93,7 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	{
 		int b = m_actList.pSaList[i].timeInterval;
 		int axb = m_commonTimeInterval * b;
-		LOWEST_COMMON_MULTIPLE(m_commonTimeInterval, b, axb)
+		lowest_common_multiple(m_commonTimeInterval, b);
 	}
 	m_timeMSDeltaOfTimeMode = m_commonTimeInterval;
 	/**---------------------------------------------------------**/
@@ -131,24 +131,24 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	// with 1-ULONG-size
 	m_totalReturnedSubsetDataLenOfDepthMode+= 3*sizeof(ULONG);
 
-	m_totalReturnedSubsetDataLenOfDepthMode+= m_rtcBlockDataHeaderLen	\
+	m_totalReturnedSubsetDataLenOfDepthMode+= m_rtcBlockDataHeaderLen	
 	*m_actList.actNum;
 
 	for (i = 0 ;i < m_actList.actNum; i++)
 	{
-		m_subsetOfDepthMode[i].rtcBlockDataHeader.toolAddr =	\
+		m_subsetOfDepthMode[i].rtcBlockDataHeader.toolAddr =	
 		m_actList.pSaList[i].toolAddress;
 
-		m_subsetOfDepthMode[i].rtcBlockDataHeader.subset =		\
+		m_subsetOfDepthMode[i].rtcBlockDataHeader.subset =		
 		m_actList.pSaList[i].subsetNo;
 
-		m_subsetOfDepthMode[i].rtcBlockDataHeader.subsetCnt =	\ 
-		(ULONG)	(m_actList.pSaList[i].depthSampleRate			\
+		m_subsetOfDepthMode[i].rtcBlockDataHeader.subsetCnt =	
+		(ULONG)	(m_actList.pSaList[i].depthSampleRate			
 		/m_commonDepthSampleRate);
 
 		m_subsetOfDepthMode[i].rtcBlockDataHeader.currentDepth = 0;
 
-		m_subsetOfDepthMode[i].rtcBlockDataHeader.dataSize =	\
+		m_subsetOfDepthMode[i].rtcBlockDataHeader.dataSize =	
 		SetOneSubsetLenOfOneToolSubset(i);
 
 		m_subsetOfDepthMode[i].rtcBlockDataHeader.actSwitch = 1;
@@ -160,8 +160,8 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 		* They are currentDepth and currentTime.
 		*/
 
-		m_subsetOfDepthMode[i].allSubsetsLenOfOneToolSubset =		\
-		(ULONG)m_subsetOfDepthMode[i].rtcBlockDataHeader.dataSize	\
+		m_subsetOfDepthMode[i].allSubsetsLenOfOneToolSubset =		
+		(ULONG)m_subsetOfDepthMode[i].rtcBlockDataHeader.dataSize	
 		* m_subsetOfDepthMode[i].rtcBlockDataHeader.subsetCnt;
 
 		m_subsetOfDepthMode[i].status = SetStatus(i);
@@ -235,14 +235,14 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	/*
 	* For Both Mode
 	*/
-	for (ULONG i = 0; i < m_actList.actNum; i++)
+	for (i = 0; i < m_actList.actNum; i++)
 	{
-		m_subsetOfDepthMode[i].percentateOfDataFileBuf =				\					\
-		(float)m_subsetOfDepthMode[i].allSubsetsLenOfOneToolSubset		\
+		m_subsetOfDepthMode[i].percentateOfDataFileBuf =									\
+		(float)m_subsetOfDepthMode[i].allSubsetsLenOfOneToolSubset		
 		/(float)m_allSubsetsLenOfAllToolSubsetOfDepthMode;
 		
-		m_subsetOfTimeMode[i].percentateOfDataFileBuf =				\					\
-		(float)m_subsetOfTimeMode[i].allSubsetsLenOfOneToolSubset	\
+		m_subsetOfTimeMode[i].percentateOfDataFileBuf =									\
+		(float)m_subsetOfTimeMode[i].allSubsetsLenOfOneToolSubset	
 		/(float)m_allSubsetsLenOfAllToolSubsetOfTimeMode;
 			
 	}

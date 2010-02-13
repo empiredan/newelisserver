@@ -12,7 +12,7 @@
 #include "commands.h"
 #include "ACTList.h"
 #include "Calib.h"
-
+/*
 typedef struct{
 	//float percentageOfBlock;
 	int subsetLen;
@@ -28,26 +28,29 @@ typedef struct{
 	short time;
 	CString dataFilePath;
 }CalibData_Attr;
-
+*/
 
 typedef struct{
 	//From the class CACTList
-	SubsetData_Attr subsetDataAttr;
+	SubsetData subsetData;
 	
 	//From the class CCalib
-	CalibData_Attr calibDataAttr;
+	CalibData calibData;
 	
 	//Related to the block itself(memory)
 	ULONG blockLen;
 	BUF_TYPE * headOfBlock;
 	BUF_TYPE * curPosOfBlock;
-	BUF_TYPE * tailOfBlock;//The next position of real tail
+	//BUF_TYPE * tailOfBlock;//The next position of real tail
+	ULONG realUsedBlockLen;
 
 	//Related to the file(disk) read to the block
 	//ULONG dataFileLen;
+	CString subsetDataFilePath;
+	CString calibDataFilePath;
 	CFile dataFile;
 	ULONG curPosOfDataFile;
-	ULONG statusTypeLen;
+	//ULONG statusTypeLen;
 	
 }Block;
 
@@ -78,7 +81,7 @@ public:
 		{
 			delete []m_blocks;
 		}
-		m_blocks = new BUF_TYPE[m_numOfBlocks];
+		m_blocks = new Block[m_numOfBlocks];
 	}
 	inline void SetBufferLen(ULONG bufLen){
 		m_bufferLen = bufLen;
@@ -88,18 +91,32 @@ public:
 		}
 		m_buffer = new BUF_TYPE[bufLen];
 	}
-	void Init(SubsetData * subsetData);
-	void Init(ULONG i, CalibData * subsetData);
+	void Init(SubsetData * sData);
+	inline void ResetBlock(ULONG i){
+		m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
+		
+		m_blocks[i].realUsedBlockLen = m_blocks[i].blockLen;
+		
+		m_blocks[i].curPosOfDataFile = m_dataFileHeadLen;
+	}
+	void Init(ULONG i, CalibData * cData);
 	inline BUF_TYPE * GetCurrentPositionOfBlock(ULONG i){
 		return m_blocks[i].curPosOfBlock;
 	}
 	void NextPositionOfBlock(ULONG i){
-		m_blocks[i].curPosOfBlock+= m_blocks[i].allSubsetsLenOfOneToolSubset;
-		if (m_blocks[i].curPosOfBlock >= m_blocks[i].headOfBlock+m_blocks[i].blockLen)
+		if (!m_mode)
 		{
-			WriteBlock(i);
-			m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
+			m_blocks[i].curPosOfBlock+= m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset;
+			if (m_blocks[i].curPosOfBlock >= m_blocks[i].headOfBlock+m_blocks[i].realUsedBlockLen)
+			{
+				WriteBlock(i);
+				m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
+			}
+		} 
+		else
+		{
 		}
+		
 	}
 	void WriteAllBlocks();
 	inline void WriteBlock(ULONG i);
@@ -108,24 +125,25 @@ public:
 	inline void SetDataFilePathOfAllBlocks(CString * filePath){
 		for (ULONG i = 0; i < m_numOfBlocks; i++)
 		{
-			m_blocks[i].subsetDataAttr.dataFilePath = filePath[i];
+			SetDataFilePathOfBlock(i, filePath[i]);
 		}
 	}
 	inline void SetDataFilePathOfBlock(ULONG i, CString filePath){
+
 		if (!m_mode)
 		{
-			m_blocks[i].subsetDataAttr.dataFilePath = filePath; 
+			m_blocks[i].subsetDataFilePath = filePath; 
 		} 
 		else
 		{
-			m_blocks[i].calibDataAttr.dataFilePath = filePath;
+			m_blocks[i].calibDataFilePath = filePath;
 		}
 		
 	}
-	
+	/*
 	inline void SetStatusTypeLen(ULONG i, ULONG typelen){
 		m_blocks[i].statusTypeLen = typelen;
-	}
+	}*/
 };
 
 #endif // !defined(AFX_DATAFILEBUFFER_H__45AAC7E8_2A0D_44F4_817B_7A08A9066CED__INCLUDED_)

@@ -9,10 +9,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <cmath>
 #include "Data.h"
 #include "commands.h"
 #include "WorkMode.h"
-
+/*
 #define NET_TO_HOST_LONG(rtcSubset) \
 	rtcSubset.actNo = ntohl(rtcSubset.actNo); \
 	rtcSubset.switchOn = ntohl(rtcSubset.switchOn); \
@@ -25,32 +26,54 @@
 	rtcSubset.m2Length = ntohl(rtcSubset.m2Length); \
 	rtcSubset.m5Length = ntohl(rtcSubset.m5Length); \
 	rtcSubset.m7Length = ntohl(rtcSubset.m7Length);
+*/
 
 //A can be used as the GREAT COMMON DENOMINATOR
-#define GREAT_COMMON_DENOMINATOR(A, B) \  
-								\
-		while (A != B)				\
-		{							\	
-			B = A+B;				\
-			A = B-A;				\
-			B = abs(B-A-A);			\
-			if (A == 1 || B == 1)	\
-			{						\
-				A = 1;				\
-				break;				\
-			}						\
-		}							\
+/*
+#define GREAT_COMMON_DENOMINATOR(A, B) while(A != B)	
+		{								
+			B = A+B;				
+			A = B-A;				
+			B = abs(B-A-A);			
+			if (A == 1 || B == 1)	
+			{						
+				A = 1;				
+				break;				
+			}						
+		}							
 
+*/
+inline static void great_common_denominator(int &a, int b)
+{
+	while(a != b)	
+	{								
+		b = a+b;				
+		a = b-a;				
+		b = abs(b-a-a);			
+		if (a == 1 || b == 1)	
+		{						
+			a = 1;				
+			break;				
+		}						
+	}
+	
+}
 
 //#define AXB(A, B) A*B
-
 //A can be used as the GREAT COMMON DENOMINATOR
+/*
 #define LOWEST_COMMON_MULTIPLE(A, B, AXB) \
 	GREAT_COMMON_DENOMINATOR(A, B) \
 	A = AXB/A;
+*/
+inline static void lowest_common_multiple(int &a, int b)
+{
+	int axb = a*b;
+	great_common_denominator(a, b);
+	a = axb/a;
+}
 
-#define RETURNED_M_LEN(M, _M) \
-	M = 4*( ( (M = _M*2)%4 ? 1 : 0 )+(M/4) );
+#define RETURNED_M_LEN(M, _M) M = 4*( ( (M = _M*2)%4 ? 1 : 0 )+(M/4) )
 
 typedef struct{
 //public:
@@ -68,11 +91,27 @@ typedef struct{
 	int	m7Length;
 }RTCSubset;
 
+inline static void net_to_host_long(RTCSubset rtcSubset)
+{
+	rtcSubset.actNo = ntohl(rtcSubset.actNo);
+	rtcSubset.switchOn = ntohl(rtcSubset.switchOn); 
+	rtcSubset.actDone = ntohl(rtcSubset.actDone); 
+	rtcSubset.depthSampleRate = ntohl(rtcSubset.depthSampleRate); 
+	rtcSubset.timeInterval = ntohl(rtcSubset.timeInterval); 
+	rtcSubset.toolAddress = ntohl(rtcSubset.toolAddress); 
+	rtcSubset.subsetNo = ntohl(rtcSubset.subsetNo); 
+	rtcSubset.delay = ntohl(rtcSubset.delay); 
+	rtcSubset.m2Length = ntohl(rtcSubset.m2Length); 
+	rtcSubset.m5Length = ntohl(rtcSubset.m5Length); 
+	rtcSubset.m7Length = ntohl(rtcSubset.m7Length);
+	
+}
+
 typedef struct{
 //public:
 	ULONG actNum;
 	ULONG nDepthInterruptMode;
-	RTCSubset * pSaList = NULL;
+	RTCSubset * pSaList;
 }ACTList;
 
 typedef struct{
@@ -118,7 +157,7 @@ private:
 	long m_depthDUDeltaOfDepthMode;
 	long m_depthDUDeltaOfTimeMode;
 
-	CWorkMode m_cWorkMmode;
+	UINT32 m_cWorkMmode;
 	
 	/**-----------------------------------------------------------------**/
 
@@ -172,14 +211,13 @@ public:
 	}
 	inline int SetOneSubsetLenOfOneToolSubset(ULONG i){
 		int m2, m5, m7;
-		RETURNED_M_LEN(m2, m_actList.pSaList[i].m2Length)
-		RETURNED_M_LEN(m5, m_actList.pSaList[i].m5Length)
-		RETURNED_M_LEN(m7, m_actList.pSaList[i].m7Length)
+		RETURNED_M_LEN(m2, m_actList.pSaList[i].m2Length);
+		RETURNED_M_LEN(m5, m_actList.pSaList[i].m5Length);
+		RETURNED_M_LEN(m7, m_actList.pSaList[i].m7Length);
 		return 2*sizeof(long)+m2+m5+m7;
 	}
 	inline long SetStatus(ULONG i){
-		return												\
-		((m_actList.pSaList[i].m2Length>0 ? RtcM2NVM : 0)	\
+		return	((m_actList.pSaList[i].m2Length>0 ? RtcM2NVM : 0)	\
 		| (m_actList.pSaList[i].m5Length>0 ? RtcM5NVM : 0))	\
 		| (m_actList.pSaList[i].m7Length>0 ? RtcM7NVM : 0);	
 	}
@@ -253,7 +291,7 @@ public:
 		{
 			return m_subsetOfDepthMode[i].rtcBlockDataHeader;
 		}
-		return (RtcBLOCK_DATA_HEADER)0;
+		
 	}
 	inline ULONG GetRtcBlockDataHeaderLen(){
 		return m_rtcBlockDataHeaderLen;

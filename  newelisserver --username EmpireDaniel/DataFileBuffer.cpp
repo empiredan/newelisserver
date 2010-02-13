@@ -18,7 +18,7 @@ static char THIS_FILE[]=__FILE__;
 
 CDataFileBuffer::CDataFileBuffer()
 {
-
+	m_dataFileHeadLen = 3*sizeof(UINT32);
 }
 
 CDataFileBuffer::~CDataFileBuffer()
@@ -35,9 +35,8 @@ CDataFileBuffer::~CDataFileBuffer()
 }
 
 
-void CDataFileBuffer::Init(SubsetData * subsetData)
+void CDataFileBuffer::Init(SubsetData * sData)
 {
-
 	m_mode = 0;
 
 	//m_blocks[0] = m_buffer;
@@ -45,29 +44,30 @@ void CDataFileBuffer::Init(SubsetData * subsetData)
 	BUF_TYPE * curPosOfBuffer = m_buffer;
 	for (ULONG i = 0; i < m_numOfBlocks; i++)
 	{
-		m_blocks[i].subsetLen = subsetData[i].rtcBlockDataHeader.dataSize;
-
-		m_blocks[i].allSubsetsLenOfOneToolSubset = subsetData[i].allSubsetsLenOfOneToolSubset;
+		m_blocks[i].subsetData = sData[i];
 		
-		m_blocks[i].blockLen = ((float)m_bufferLen*subsetData[i].percentateOfDataFileBuf	\
-		/subsetData[i].allSubsetsLenOfOneToolSubset)*subsetData[i].allSubsetsLenOfOneToolSubset;
+		m_blocks[i].blockLen = ((float)m_bufferLen*m_blocks[i].subsetData.percentateOfDataFileBuf	\
+		/m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset)*m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset;
 
 		m_blocks[i].headOfBlock = curPosOfBuffer;
 
 		m_blocks[i].curPosOfBlock = curPosOfBuffer;
 
-		m_blocks[i].dataFilePath = "";
+		curPosOfBuffer+= m_blocks[i].blockLen;
 
-		m_blocks[i].status = subsetData[i].status;
+		m_blocks[i].realUsedBlockLen = m_blocks[i].blockLen;
 
-		m_blocks[i].time = subsetData[i].time;
-		
-		m_blocks[i].statusTypeLen = sizeof(long);
+		m_blocks[i].subsetDataFilePath = "";
 
 		m_blocks[i].curPosOfDataFile = m_dataFileHeadLen;
-
 	}
 }
+
+void CDataFileBuffer::Init(ULONG i, CalibData * cData)
+{
+
+}
+
 
 void CDataFileBuffer::WriteAllBlocks()
 {
@@ -79,39 +79,64 @@ void CDataFileBuffer::WriteAllBlocks()
 inline void CDataFileBuffer::WriteBlock(ULONG i)
 {
 	CFileException fileException;
-	if (m_blocks[i].dataFilePath != "")
+	if (!m_mode)
 	{
-		if (m_blocks[i].dataFile.Open(m_blocks[i].dataFilePath, \
-			CFile::modeRead, &fileException)
+		if (m_blocks[i].subsetDataFilePath != "")
 		{
-			WriteBlocksByReadFile(i);
-		} 
+			if (m_blocks[i].dataFile.Open(m_blocks[i].subsetDataFilePath, \
+				CFile::modeRead, &fileException))
+			{
+				WriteBlocksByReadFile(i);
+			} 
+			else
+			{
+				WriteBlockByRandomNumber(i);
+			}
+			m_blocks[i].dataFile.Close();
+		}
 		else
 		{
 			WriteBlockByRandomNumber(i);
 		}
-		m_blocks[i].dataFile.Close();
-	}
+	} 
 	else
 	{
-		WriteBlockByRandomNumber(i);
+		if (m_blocks[i].calibDataFilePath != "")
+		{
+			if (m_blocks[i].dataFile.Open(m_blocks[i].calibDataFilePath, \
+				CFile::modeRead, &fileException))
+			{
+				WriteBlocksByReadFile(i);
+			} 
+			else
+			{
+				WriteBlockByRandomNumber(i);
+			}
+			m_blocks[i].dataFile.Close();
+		}
+		else
+		{
+			WriteBlockByRandomNumber(i);
+		}
 	}
+	
+	
 }
 inline void CDataFileBuffer::WriteBlocksByReadFile(ULONG i)
 {
 	ULONG dataFileLen = m_blocks[i].dataFile.GetLength();
 	if (m_blocks[i].curPosOfDataFile <= m_dataFileHeadLen)
 	{
-		if (m_blocks[i].curPosOfDataFile + m_blocks[i].blockLen <= \
+		if (m_blocks[i].curPosOfDataFile + m_blocks[i].realUsedBlockLen <= \
 			dataFileLen)
 		{
 			m_blocks[i].dataFile.Seek(m_blocks[i].curPosOfDataFile, \
 			CFile::begin);
 
 			m_blocks[i].dataFile.Read(m_blocks[i].headOfBlock, \
-			m_blocks[i].blockLen);
+			m_blocks[i].realUsedBlockLen);
 
-			m_blocks[i].curPosOfDataFile+= m_blocks[i].blockLen;
+			m_blocks[i].curPosOfDataFile+= m_blocks[i].realUsedBlockLen;
 		} 
 		else
 		{
@@ -124,21 +149,21 @@ inline void CDataFileBuffer::WriteBlocksByReadFile(ULONG i)
 	} 
 	else
 	{
-		if (m_blocks[i].curPosOfDataFile + m_blocks[i].blockLen <= \
+		if (m_blocks[i].curPosOfDataFile + m_blocks[i].realUsedBlockLen <= \
 			dataFileLen)
 		{
 			m_blocks[i].dataFile.Seek(m_blocks[i].curPosOfDataFile, \
 				CFile::begin);
 			
 			m_blocks[i].dataFile.Read(m_blocks[i].headOfBlock, \
-				m_blocks[i].blockLen);
+				m_blocks[i].realUsedBlockLen);
 			
-			m_blocks[i].curPosOfDataFile+= m_blocks[i].blockLen;
+			m_blocks[i].curPosOfDataFile+= m_blocks[i].realUsedBlockLen;
 		} 
 		else
 		{
 			ULONG firstReadLen = dataFileLen - m_blocks[i].curPosOfDataFile;
-			ULONG secondReadLen = m_blocks[i].blockLen - firstReadLen;
+			ULONG secondReadLen = m_blocks[i].realUsedBlockLen - firstReadLen;
 			m_blocks[i].dataFile.Seek(m_blocks[i].curPosOfDataFile, \
 			CFile::begin);
 			
@@ -159,21 +184,44 @@ inline void CDataFileBuffer::WriteBlocksByReadFile(ULONG i)
 }
 inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 {
-	ULONG statusTypeLen = sizeof(long);
-
-	BUF_TYPE * blockEnd = m_blocks[i].headOfBlock+m_blocks[i].blockLen;
-
-	for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
+	ULONG statusTypeLen;
+	BUF_TYPE * blockEnd = m_blocks[i].headOfBlock+m_blocks[i].realUsedBlockLen;
+	if (!m_mode)
 	{
-		memcpy(pBlock, (BUF_TYPE *)m_blocks[i].status, statusTypeLen);
-		pBlock+= statusTypeLen;
-		memcpy(pBlock, (BUF_TYPE *)m_blocks[i].time, statusTypeLen);
-		pBlock+= statusTypeLen;
-		BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].subsetLen-2*statusTypeLen);
-		for ( ; pBlock < subsetEnd; pBlock++)
+		statusTypeLen = sizeof(m_blocks[i].subsetData.status);	
+		
+		for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
 		{
-			memset(pBlock, rand()%256, 1);
+			memcpy(pBlock, (BUF_TYPE *)m_blocks[i].subsetData.status, statusTypeLen);
+			pBlock+= statusTypeLen;
+			memcpy(pBlock, (BUF_TYPE *)m_blocks[i].subsetData.time, statusTypeLen);
+			pBlock+= statusTypeLen;
+			BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].subsetData.rtcBlockDataHeader.dataSize-2*statusTypeLen);
+			for ( ; pBlock < subsetEnd; pBlock++)
+			{
+				memset(pBlock, rand()%256, 1);
+			}
+		}
+	} 
+	else
+	{
+		statusTypeLen = sizeof(m_blocks[i].calibData.status);
+		
+		for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
+		{
+			memcpy(pBlock, (BUF_TYPE *)m_blocks[i].calibData.status, statusTypeLen);
+			pBlock+= statusTypeLen;
+			memcpy(pBlock, (BUF_TYPE *)m_blocks[i].calibData.time, statusTypeLen);
+			pBlock+= statusTypeLen;
+			/*
+			BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].calibData-2*statusTypeLen);
+			for ( ; pBlock < subsetEnd; pBlock++)
+			{
+				memset(pBlock, rand()%256, 1);
+			}
+			*/
 		}
 	}
+	
 
 }

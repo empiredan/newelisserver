@@ -6,7 +6,7 @@
 #include "ELISTestServer.h"
 #include "ELISTestServerDlg.h"
 #include "MyTabCtrl.h"
-#include "ActTable.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -30,7 +30,7 @@ void TabAct::setCElisTestServerDlg(CELISTestServerDlg* dlg)
 {
 	m_pELISTestServerDlg=dlg;
 }
-
+/*
 void TabAct::setTabCtrl(MyTabCtrl* tab)
 {
 	m_ptabCtrl=tab;
@@ -135,7 +135,7 @@ void TabAct::setACTTable(CActTable* acttbl)
 	
 	
 }
-
+*/
 void TabAct::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
