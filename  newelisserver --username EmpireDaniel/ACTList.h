@@ -113,7 +113,12 @@ typedef struct{
 	ULONG nDepthInterruptMode;
 	RTCSubset * pSaList;
 }ACTList;
-
+/*
+extern ACTList& ACTList::operator = (const ACTList& actList)
+{
+	this->actNum
+}
+*/
 typedef struct{
 //public:
 	ULONG	toolAddr;			//address of tool

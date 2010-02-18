@@ -1,5 +1,5 @@
-#if !defined(AFX_MYLISTCTRL_H__A8529872_EF8B_471F_B006_E2CA1BD861DA__INCLUDED_)
-#define AFX_MYLISTCTRL_H__A8529872_EF8B_471F_B006_E2CA1BD861DA__INCLUDED_
+#if !defined(AFX_MYLISTCTRL_H__8F5C19F4_5A5C_4F9A_8839_17184FF264C7__INCLUDED_)
+#define AFX_MYLISTCTRL_H__8F5C19F4_5A5C_4F9A_8839_17184FF264C7__INCLUDED_
 
 #if _MSC_VER > 1000
 #pragma once
@@ -8,13 +8,13 @@
 //
 
 /////////////////////////////////////////////////////////////////////////////
-// MyListCtrl window
+// CMyListCtrl window
 
-class MyListCtrl : public CListCtrl
+class CMyListCtrl : public CListCtrl
 {
 // Construction
 public:
-	MyListCtrl();
+	CMyListCtrl();
 
 // Attributes
 public:
@@ -24,17 +24,16 @@ public:
 
 // Overrides
 	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(MyListCtrl)
+	//{{AFX_VIRTUAL(CMyListCtrl)
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
-	//void OnPaint();
-	virtual ~MyListCtrl();
+	virtual ~CMyListCtrl();
 
 	// Generated message map functions
 protected:
-	//{{AFX_MSG(MyListCtrl)
+	//{{AFX_MSG(CMyListCtrl)
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
 
@@ -46,4 +45,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_MYLISTCTRL_H__A8529872_EF8B_471F_B006_E2CA1BD861DA__INCLUDED_)
+#endif // !defined(AFX_MYLISTCTRL_H__8F5C19F4_5A5C_4F9A_8839_17184FF264C7__INCLUDED_)

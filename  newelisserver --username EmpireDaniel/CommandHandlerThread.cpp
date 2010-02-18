@@ -57,9 +57,10 @@ BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	//{{AFX_MSG_MAP(CCommandHandlerThread)
 	ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
 	//ON_THREAD_MESSAGE(WM_TIMER, OnTimerProc)
-	ON_THREAD_MESSAGE(WM_DATABUF, OnDataBuf)
-	ON_THREAD_MESSAGE(WM_ACTROOT, OnACTRoot)
-	ON_THREAD_MESSAGE(WM_CALVERROOT, OnCALVERRoot)
+	ON_THREAD_MESSAGE(WM_DATABUF_LEN, OnDataBufLen)
+	ON_THREAD_MESSAGE(WM_ALL_ACT_DATAFILE_PATHS, OnAllACTDataFilePaths)
+	ON_THREAD_MESSAGE(WM_ACT_DATAFILE_PATH, OnACTDataFilePath)
+	ON_THREAD_MESSAGE(WM_CALVER_DATAFILE_PATH, OnCALVERDataFilePath)
 	//ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -191,17 +192,25 @@ void CCommandHandlerThread::WorkModeProc()
 	}
 	
 }
-VOID CCommandHandlerThread::OnDataBuf(WPARAM wParam, LPARAM lParam)
+VOID CCommandHandlerThread::OnDataBufLen(WPARAM wParam, LPARAM lParam)
 {
 	ULONG dataFileBufferLen = (ULONG)lParam;
 	m_cDataFileBuffer.SetBufferLen(dataFileBufferLen);
 }
-VOID CCommandHandlerThread::OnACTRoot(WPARAM wParam, LPARAM lParam)
+VOID CCommandHandlerThread::OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam)
 {
-	m_actRootPath = (CString)lParam;
+	CString * actDataFile = (CString *)lParam;
+	m_cDataFileBuffer.SetDataFilePathOfAllBlocks(actDataFile);
+		
+}
+VOID CCommandHandlerThread::OnACTDataFilePath(WPARAM wParam, LPARAM lParam)
+{
+	ULONG i = (ULONG)wParam;
+	CString actDataFile = (CString)lParam;
+	m_cDataFileBuffer.SetDataFilePathOfBlock(i, actDataFile);
 	
 }
-VOID CCommandHandlerThread::OnCALVERRoot(WPARAM wParam, LPARAM lParam)
+VOID CCommandHandlerThread::OnCALVERDataFilePath(WPARAM wParam, LPARAM lParam)
 {
 
 }
@@ -423,7 +432,7 @@ void CCommandHandlerThread::NetCmd_CalibStart() {
 	//sprintf(logdata, "CCommandHandler::NetCmd_CalibStart, returned one calib subset data\n");
 	//dlg->log.Write(logdata, strlen(logdata));
 	//dlg->log.Flush();
-	*/
+	*/ 
 }
 /*
 void CCommandHandlerThread::NetCmd_CalibStop() {
