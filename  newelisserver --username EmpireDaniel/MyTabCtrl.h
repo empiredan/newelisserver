@@ -10,7 +10,7 @@
 #include "CALVERDialog.h"
 /////////////////////////////////////////////////////////////////////////////
 // CMyTabCtrl window
-
+class CELISTestServerDlg;
 class CMyTabCtrl : public CTabCtrl
 {
 // Construction
@@ -19,10 +19,14 @@ public:
 
 // Attributes
 public:
+	CELISTestServerDlg * m_elisTestServerDlg;
 	CACTDialog * m_actDialog;
 	CCALVERDialog * m_calverDialog;
 // Operations
 public:
+	inline void SetElisTestServerDlg(CELISTestServerDlg * dlg;){
+		m_elisTestServerDlg = dlg;
+	}
 	inline void Init(){
 		m_actDialog->Create(IDD_ACT_DIALOG, this);
 		m_calverDialog->Create(IDD_CALVER_DIALOG, this);

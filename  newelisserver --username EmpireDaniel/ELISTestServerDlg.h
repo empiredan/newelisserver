@@ -46,7 +46,7 @@ public:
 	virtual ~CELISTestServerDlg();
 
 // Attributes
-private:
+public:
 	/**
 	* Net connection
 	*/
@@ -169,7 +169,9 @@ public:
 	void EnableCreateLog(BOOL enableButton);
 	void EnableStopLog(BOOL enableButton);
 	inline BOOL SetDataFilePath(ULONG i, CMyListCtrl myListCtrl, UINT32 dataFileType);
+	inline BOOL SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl myListCtrl, UINT32 dataFileType);
 	inline BOOL SetAllDataFilePaths(CMyListCtrl myListCtrl, UINT32 dataFileType);
+	
 
 // Implementation
 protected:

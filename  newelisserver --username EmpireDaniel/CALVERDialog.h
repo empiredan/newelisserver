@@ -22,8 +22,14 @@ public:
 	enum { IDD = IDD_CALVER_DIALOG };
 		// NOTE: the ClassWizard will add data members here
 	CMyListCtrl m_calverListCtrl;
+	CMyTabCtrl * m_myTabCtrl;
 	//}}AFX_DATA
 
+//Operations
+public:
+	inline void SetTabCtrl(CMyTabCtrl * myTabCtrl){
+		m_myTabCtrl = m_myTabCtrl;
+	}
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -37,7 +43,10 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CCALVERDialog)
-		// NOTE: the ClassWizard will add member functions here
+	afx_msg void OnDblclkListCalver(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

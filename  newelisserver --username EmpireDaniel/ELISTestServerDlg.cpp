@@ -214,7 +214,37 @@ inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl myListCtrl,
 	return FALSE;
 
 }
-
+inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl myListCtrl, UINT32 dataFileType)
+{
+	UINT32 dataFileHeader[3];
+	CFile dataFile(dataFilePath, CFile::modeRead);
+	BUF_TYPE dataFileHeaderBuf[sizeof(UINT32)*3];
+	dataFile.Read(dataFileHeaderBuf, sizeof(UINT32)*3);
+	dataFile.Close();
+					
+	memcpy(dataFileHeader, dataFileHeaderBuf, sizeof(UINT32)*3);
+	UINT32 toolADDR=dataFileHeader[0];
+	UINT32 subsetNo=dataFileHeader[1];
+	UINT32 dataType=dataFileHeader[2];
+	if (toolADDR == atoi(myListCtrl.GetItemText(i, 1))
+		&& subsetNo == atoi(myListCtrl.GetItemText(i, 2))
+		&& dataType == dataFileType)//文件格式匹配
+	{
+		if (myListCtrl.GetItemText(i, 5) != dataFilePath)
+		{
+			myListCtrl.SetItemText(i, 5, dataFilePath);
+			return TRUE;
+		} 
+		return FALSE;				
+	} 
+	else
+	{
+		char t[50];
+		sprintf(t, "%s", "文件选择错误,请重新选择!");
+		AfxMessageBox(_T(t));
+		return FALSE;
+	}
+}
 inline BOOL CELISTestServerDlg::SetAllDataFilePaths(CMyListCtrl myListCtrl, UINT32 dataFileType)
 {
 	BOOL findDataFile = FALSE;
@@ -470,9 +500,10 @@ BOOL CELISTestServerDlg::OnInitDialog()
 	m_myTabCtrl.InsertItem(0, _T("ACT"));
 	m_myTabCtrl.InsertItem(1, _T("Cal/Ver"));
 	m_myTabCtrl.Init();
+	m_myTabCtrl.SetElisTestServerDlg(this);
 
-	m_myTabCtrl.m_dlgAct->setCElisTestServerDlg(this);
-	m_myTabCtrl.m_dlgCalVer->setCElisTestServerDlg(this);
+	//m_myTabCtrl.m_dlgAct->setCElisTestServerDlg(this);
+	//m_myTabCtrl.m_dlgCalVer->setCElisTestServerDlg(this);
 
 	CString dataConfigFileName = "dataconfig.ini";//D:\\vc6\\MyProjects\\elis\\ELISTestServer6.3.2
 	char currentDirectoryChar[1024];
@@ -600,11 +631,11 @@ void CELISTestServerDlg::OnSelchangeElistestserverTab(NMHDR* pNMHDR, LRESULT* pR
 
 	case 0:
 		m_myTabCtrl.m_actDialog->ShowWindow(SW_SHOW);
-		m_myTabCtrl.m_dlgCalVer->ShowWindow(SW_HIDE);
+		m_myTabCtrl.m_calverDialog->ShowWindow(SW_HIDE);
 		break;
 	case 1:
 		m_myTabCtrl.m_actDialog->ShowWindow(SW_HIDE);
-		m_myTabCtrl.m_dlgCalVer->ShowWindow(SW_SHOW);
+		m_myTabCtrl.m_calverDialog->ShowWindow(SW_SHOW);
 		break;
 	default:
 		break;
@@ -635,7 +666,13 @@ void CELISTestServerDlg::OnButtonActFolder()
         str.Format("%s",  szPath);
         //AfxMessageBox(_T(str));
 		GetDlgItem(IDC_EDIT_ACT_FOLDER)->SetWindowText(str);
-		UpdateData(TRUE);
+		m_actDataFileRootPath = str;
+		if (SetAllDataFilePaths(m_myTabCtrl.m_actDialog->m_actListCtrl, 0))
+		{
+			::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
+		}
+		
+		/*UpdateData(TRUE);
 		TabAct* actListCtrlDlg = m_tabMyTabCtrl.m_dlgAct;
 		int itemCount = actListCtrlDlg->m_listctrlAct.GetItemCount();
 		if (itemCount > 0)
@@ -644,7 +681,7 @@ void CELISTestServerDlg::OnButtonActFolder()
 			{
 				actListCtrlDlg->setDataFilePath(str, i);
 			}
-		}
+		}*/
 		//m_actListRootFolder=str;
     } else {
         //AfxMessageBox(_T("无效的目录，请重新选择!"));
