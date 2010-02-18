@@ -48,7 +48,40 @@ END_MESSAGE_MAP()
 void CACTDialog::OnDblclkListAct(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	// TODO: Add your control notification handler code here
-	
+	NMLISTVIEW* pNMLISTVIEW=(NMLISTVIEW*)pNMHDR;
+	int rowNo=pNMLISTVIEW->iItem;
+	int columeNo=pNMLISTVIEW->iSubItem;
+
+	if (m_actListCtrl.GetItemText(rowNo, 0) != "")
+	{
+		if (columeNo == 5)
+		{
+			WIN32_FIND_DATA fd;
+			CString actDataFileRootPath = m_myTabCtrl->m_elisTestServerDlg->m_actDataFileRootPath;
+			HANDLE hFind = FindFirstFile(, &fd);
+			if ((hFind != INVALID_HANDLE_VALUE) && (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)){
+				//目录存在
+				CFileDialog openActDataFileDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_FILEMUSTEXIST, "All Files(*.*)|*.*||", this);
+				openActDataFileDlg.m_ofn.lpstrInitialDir = actDataFileRootPath;
+				CString strFilePath;
+				if (openActDataFileDlg.DoModal()==IDOK)
+				{
+					strFilePath = openActDataFileDlg.GetPathName();
+					if (m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_actListCtrl, 0))
+					{
+						::PostThreadMessage(m_myTabCtrl->m_elisTestServerDlg->m_cmdHandlerThread->m_nThreadID,
+						WM_ACT_DATAFILE_PATH, NULL, (LPARAM)strFilePath);
+					}
+					
+				}
+			}else{
+				char t[50];
+				sprintf(t, "%s", "此目录已不存在!");
+				AfxMessageBox(_T(t));
+			}
+		}
+	}
+
 	*pResult = 0;
 }
 
@@ -167,11 +200,9 @@ BOOL CACTDialog::OnInitDialog()
 	
 	// TODO: Add extra initialization here
 	CRect tabCtrlRect;
-	this->m_ptabCtrl->GetClientRect(&tabCtrlRect);
-	//CRect dlgRect;
-	//GetClientRect(&dlgRect);
+	m_myTabCtrl->GetClientRect(&tabCtrlRect);
 	CRect listRect;
-	this->m_listctrlAct.GetWindowRect(&listRect);
+	m_actListCtrl.GetWindowRect(&listRect);
 	SCROLLINFO hScrollInfo;
 	hScrollInfo.fMask=SIF_ALL;
 	hScrollInfo.nPage=56;
@@ -181,9 +212,6 @@ BOOL CACTDialog::OnInitDialog()
 	hScrollInfo.nTrackPos=0;
 	hScrollInfo.cbSize=sizeof(hScrollInfo);
 	SetScrollInfo(SB_HORZ,&hScrollInfo);
-	
-	
-	
 	
 	//点击一个ITEM就可使CListCtrl一整行被选择
 	m_actListCtrl.SetExtendedStyle(LVS_EX_FULLROWSELECT);

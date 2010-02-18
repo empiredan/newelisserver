@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "elistestserver.h"
+#include "ELISTestServerDlg.h"
 #include "MyTabCtrl.h"
 
 #ifdef _DEBUG
@@ -18,6 +19,8 @@ CMyTabCtrl::CMyTabCtrl()
 {
 	m_actDialog = new CACTDialog;
 	m_calverDialog = new CCALVERDialog;
+	m_actDialog->SetTabCtrl(this);
+	m_calverDialog->SetTabCtrl(this);
 }
 
 CMyTabCtrl::~CMyTabCtrl()
