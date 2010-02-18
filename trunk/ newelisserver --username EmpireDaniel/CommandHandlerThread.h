@@ -15,9 +15,10 @@
 //#include "MessageSenderThread.h"
 
 #define WM_COMMAND_DATA WM_USER+1
-#define WM_DATABUF WM_USER+2
-#define WM_ACTROOT WM_USER+3
-#define WM_CALVERROOT WM_USER+4
+#define WM_DATABUF_LEN WM_USER+2
+#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+3
+#define WM_ACT_DATAFILE_PATH WM_USER+4
+#define WM_CALVER_DATAFILE_PATH WM_USER+5
 
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread thread
@@ -55,7 +56,7 @@ private:
 	ULONG m_bodyLen;
 
 	ULONG m_bufferLen;
-	CString m_actRootPath;
+	//CString m_actRootPath;
 
 	CACTList m_cACTList;
 	DPM_DISPLAY_PARA m_dpmDisplayPara;
@@ -130,9 +131,10 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CCommandHandlerThread)
 	afx_msg VOID OnCommand(WPARAM wParam, LPARAM lParam);
-	afx_msg VOID OnDataBuf(WPARAM wParam, LPARAM lParam);
-	afx_msg VOID OnACTRoot(WPARAM wParam, LPARAM lParam);
-	afx_msg VOID OnCALVERRoot(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnDataBufLen(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnACTDataFilePath(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnCALVERDataFilePath(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 	
 

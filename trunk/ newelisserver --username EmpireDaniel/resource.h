@@ -8,7 +8,9 @@
 #define IDD_ELISTESTSERVER_DIALOG       102
 #define IDP_SOCKETS_INIT_FAILED         103
 #define IDD_TAB_ACT                     104
+#define IDD_ACT_DIALOG                  104
 #define IDD_TAB_CALVER                  105
+#define IDD_CALVER_DIALOG               105
 #define IDR_MAINFRAME                   128
 #define IDC_ELISTESTSERVER_TAB          1000
 #define IDC_MY_TAB                      1000
@@ -77,14 +79,15 @@
 #define IDC_STATIC_CURRENT_DEPTH_SHOW_UNIT 1048
 #define IDC_STATIC_SPEED_SHOW_UNIT      1049
 #define IDC_BUTTON_STOP_LOG             1050
+#define IDC_BUTTON_PAUSE_LOG            1050
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        129
+#define _APS_NEXT_RESOURCE_VALUE        134
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1051
-#define _APS_NEXT_SYMED_VALUE           106
+#define _APS_NEXT_SYMED_VALUE           108
 #endif
 #endif

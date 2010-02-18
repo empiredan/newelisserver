@@ -9,8 +9,8 @@
 
 #include "MyListenSocket.h"
 
-#define WM_PORT WM_USER
-#define WM_SEND WM_USER
+#define WM_PORT WM_USER+10
+#define WM_SEND WM_USER+11
 
 /////////////////////////////////////////////////////////////////////////////
 // CSocketThread thread

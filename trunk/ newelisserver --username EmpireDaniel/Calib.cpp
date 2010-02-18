@@ -1,0 +1,27 @@
+// Calib.cpp: implementation of the CCalib class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "elistestserver.h"
+#include "Calib.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CCalib::CCalib()
+{
+
+}
+
+CCalib::~CCalib()
+{
+
+}
