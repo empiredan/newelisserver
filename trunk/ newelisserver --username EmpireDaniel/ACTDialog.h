@@ -6,13 +6,13 @@
 #endif // _MSC_VER > 1000
 // ACTDialog.h : header file
 //
-#include "resource.h"
+#include "Resource.h"
 #include "MyListCtrl.h"
-#include "MyTabCtrl.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CACTDialog dialog
-
+class CELISTestServerDlg;
+class CMyTabCtrl;
 class CACTDialog : public CDialog
 {
 // Construction
@@ -30,7 +30,7 @@ public:
 //Operations
 public:
 	inline void SetTabCtrl(CMyTabCtrl * myTabCtrl){
-		m_myTabCtrl = m_myTabCtrl;
+		m_myTabCtrl = myTabCtrl;
 	}
 
 // Overrides
@@ -49,6 +49,7 @@ protected:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	virtual BOOL OnInitDialog();
+	afx_msg void OnPaint();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

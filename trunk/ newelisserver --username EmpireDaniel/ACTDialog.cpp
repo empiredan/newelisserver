@@ -5,6 +5,9 @@
 #include "elistestserver.h"
 #include "ACTDialog.h"
 
+#include "ELISTestServerDlg.h"
+#include "MyTabCtrl.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -39,6 +42,7 @@ BEGIN_MESSAGE_MAP(CACTDialog, CDialog)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_ACT, OnDblclkListAct)
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
+	ON_WM_PAINT()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -58,7 +62,7 @@ void CACTDialog::OnDblclkListAct(NMHDR* pNMHDR, LRESULT* pResult)
 		{
 			WIN32_FIND_DATA fd;
 			CString actDataFileRootPath = m_myTabCtrl->m_elisTestServerDlg->m_actDataFileRootPath;
-			HANDLE hFind = FindFirstFile(, &fd);
+			HANDLE hFind = FindFirstFile(actDataFileRootPath, &fd);
 			if ((hFind != INVALID_HANDLE_VALUE) && (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)){
 				//Ä¿Â¼´æÔÚ
 				CFileDialog openActDataFileDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_FILEMUSTEXIST, "All Files(*.*)|*.*||", this);
@@ -70,7 +74,7 @@ void CACTDialog::OnDblclkListAct(NMHDR* pNMHDR, LRESULT* pResult)
 					if (m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_actListCtrl, 0))
 					{
 						::PostThreadMessage(m_myTabCtrl->m_elisTestServerDlg->m_cmdHandlerThread->m_nThreadID,
-						WM_ACT_DATAFILE_PATH, NULL, (LPARAM)strFilePath);
+						WM_ACT_DATAFILE_PATH, (WPARAM)rowNo, (LPARAM)&strFilePath);
 					}
 					
 				}
@@ -253,4 +257,13 @@ BOOL CACTDialog::OnInitDialog()
 	m_actListCtrl.InsertColumn(5,&lvcol);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CACTDialog::OnPaint() 
+{
+	CPaintDC dc(this); // device context for painting
+	
+	// TODO: Add your message handler code here
+	
+	// Do not call CDialog::OnPaint() for painting messages
 }

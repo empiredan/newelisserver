@@ -42,6 +42,8 @@ int CCommandHandlerThread::ExitInstance()
 	return CWinThread::ExitInstance();
 }
 
+void * CCommandHandlerThread::m_pObject;
+
 void CCommandHandlerThread::Init()
 {
 	ULONG m_bufferLen = 0;
@@ -206,13 +208,13 @@ VOID CCommandHandlerThread::OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam)
 VOID CCommandHandlerThread::OnACTDataFilePath(WPARAM wParam, LPARAM lParam)
 {
 	ULONG i = (ULONG)wParam;
-	CString actDataFile = (CString)lParam;
-	m_cDataFileBuffer.SetDataFilePathOfBlock(i, actDataFile);
+	CString * actDataFile = (CString *)lParam;
+	m_cDataFileBuffer.SetDataFilePathOfBlock(i, *actDataFile);
 	
 }
 VOID CCommandHandlerThread::OnCALVERDataFilePath(WPARAM wParam, LPARAM lParam)
 {
-
+	CString * calverDataFile = (CString *)lParam;
 }
 VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 {
@@ -229,7 +231,7 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case NET_CMDTYPE_INIT_CONFIG_PARAMETER:
-			NetCmd_InitConfigParameter();
+			//NetCmd_InitConfigParameter();
 			break;
 
 		case NET_CMDTYPE_CTRL_DEACTIVATE:
@@ -241,15 +243,15 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case NET_CMDTYPE_CTRL_STANDBYTIME_INTERVAL:
-			NetCmd_CtrlStandbytimeInterval();
+			//NetCmd_CtrlStandbytimeInterval();
 			break;
 
 		case NET_CMDTYPE_CTRL_RECSTOP:
-			NetCmd_CtrlRecstop();
+			//NetCmd_CtrlRecstop();
 			break;
 
 		case NET_CMDTYPE_CTRL_ACTSWITCH:
-			NetCmd_CtrlACTSwitch();
+			//NetCmd_CtrlACTSwitch();
 			break;
 
 		//以下为刻度命令类型
@@ -262,24 +264,24 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case NET_CMDTYPE_CALIB_STOP:
-			NetCmd_CalibStop();
+			//NetCmd_CalibStop();
 			break;
 
 		//单次控制命令
 		case NET_CMDTYPE_SNGL_CTLCMD:
-			NetCmd_SnglCtl();
+			//NetCmd_SnglCtl();
 			break;
 
 		//设置深度中断为内部或外部,
 		//命令长度：4个字节，命令：0为内部，1为外部中断
 		case NET_CMDTYPE_DEPTH_INTERNAL:
-			NetCmd_DepthInternal();
+			//NetCmd_DepthInternal();
 			break;
 
 		//内部方式下，设置方向,
 		//命令长度：4个字节，命令： 0为上，1为下
 		case NET_CMDTYPE_DEPTH_DIRECTION:
-			NetCmd_DepthDirection();
+			//NetCmd_DepthDirection();
 			break;
 
 		//在内部方式下，设置速度
@@ -304,26 +306,26 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 		//命令长度：8个字节，前4 byte为加减命令：0为减，1为加，
 		//后4 byte为公英制命令，0为英制， 1为公制
 		case NET_CMDTYPE_DEPTH_MANUALDEPTHCORR:
-				NetCmd_ManualDepthCorrection();
+				//NetCmd_ManualDepthCorrection();
 			break;
 
 		//自动校正（加减）深度
 		//命令长度：8个字节，前4 byte为控制命令：0为停止校正，1为开始校正，
 		//后4 byte为校正间隔
 		case NET_CMDTYPE_DEPTH_AUTODEPTHCORR:
-			NetCmd_AutoDepthCorrection();
+			//NetCmd_AutoDepthCorrection();
 			break;
 
 		//深度板锁定
 		//命令长度：4个字节，命令：1
 		case NET_CMDTYPE_DEPTH_LOCK:
-			NetCmd_DepthLock();
+			//NetCmd_DepthLock();
 			break;
 	
 		//深度板解锁
 		//命令长度：4个字节，命令：0
 		case NET_CMDTYPE_DEPTH_UNLOCK:
-			NetCmd_DepthUnlock();
+			//NetCmd_DepthUnlock();
 			break;
 
 		//通知发送张力因数
@@ -331,7 +333,7 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 		//返回：4个字节，高16位maxTension，低16位offsetTension，
 		//返回类型：NET_RETURN_DEPTHPANEL_READTENSIONFACTOR
 		case NET_CMDTYPE_DEPTH_TENSIONFACTOR:
-			NetCmd_DepthTensionFactor();
+			//NetCmd_DepthTensionFactor();
 			break;
 
 		//通知发送张力角度
@@ -339,13 +341,13 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 		//返回：4个字节，张力角度，
 		//返回类型：NET_RETURN_DEPTHPANEL_READTENSIONANGLE
 		case NET_CMDTYPE_DEPTH_TENSIONANGLE:
-			NetCmd_DepthTensionAngle();
+			//NetCmd_DepthTensionAngle();
 			break;
 
 		//通知发送CHT
 		//命令长度：4个字节，命令：CHT值
 		case NET_CMDTYPE_DEPTH_CHT:
-			NetCmd_DepthCHT();
+			//NetCmd_DepthCHT();
 			break;
 			
 		default:

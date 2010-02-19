@@ -88,30 +88,30 @@ public:
 	void NetCmd_InitServiceTable();
 	void NetCmd_CalibPara();
 	void NetCmd_CalibStart();
-	void NetCmd_CalibStop();
+	//void NetCmd_CalibStop();
 	void NetCmd_CtrlWorkState();
-	void NetCmd_SetStandbyTimeInterval();
-	void NetCmd_CtrlRecStop();
-	void NetCmd_CtrlActSwitch();
+	//void NetCmd_SetStandbyTimeInterval();
+	//void NetCmd_CtrlRecStop();
+	//void NetCmd_CtrlActSwitch();
 	void NetCmd_CtrlActDeactivate();
 	
-	void NetCmd_InitConfigParameter();
-	void NetCmd_CtrlStandbytimeInterval();
-	void NetCmd_CtrlRecstop();
-	void NetCmd_CtrlACTSwitch();
-	void NetCmd_SnglCtl();
-	void NetCmd_DepthInternal();
-	void NetCmd_DepthDirection();
+	//void NetCmd_InitConfigParameter();
+	//void NetCmd_CtrlStandbytimeInterval();
+	//void NetCmd_CtrlRecstop();
+	//void NetCmd_CtrlACTSwitch();
+	//void NetCmd_SnglCtl();
+	//void NetCmd_DepthInternal();
+	//void NetCmd_DepthDirection();
 	void NetCmd_DepthSpeed();
 	void NetCmd_TrueDepth();
 	void NetCmd_CorrectedDepth();
-	void NetCmd_ManualDepthCorrection();
-	void NetCmd_AutoDepthCorrection();
-	void NetCmd_DepthLock();
-	void NetCmd_DepthUnlock();
-	void NetCmd_DepthTensionFactor();
-	void NetCmd_DepthTensionAngle();
-	void NetCmd_DepthCHT();
+	//void NetCmd_ManualDepthCorrection();
+	//void NetCmd_AutoDepthCorrection();
+	//void NetCmd_DepthLock();
+	//void NetCmd_DepthUnlock();
+	//void NetCmd_DepthTensionFactor();
+	//void NetCmd_DepthTensionAngle();
+	//void NetCmd_DepthCHT();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

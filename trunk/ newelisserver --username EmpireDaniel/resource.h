@@ -7,9 +7,7 @@
 #define IDS_ABOUTBOX                    101
 #define IDD_ELISTESTSERVER_DIALOG       102
 #define IDP_SOCKETS_INIT_FAILED         103
-#define IDD_TAB_ACT                     104
 #define IDD_ACT_DIALOG                  104
-#define IDD_TAB_CALVER                  105
 #define IDD_CALVER_DIALOG               105
 #define IDR_MAINFRAME                   128
 #define IDC_ELISTESTSERVER_TAB          1000
@@ -22,9 +20,7 @@
 #define IDC_STATIC_CORRECTED_DEPTH      1005
 #define IDC_EDIT_TRUE_DEPTH             1006
 #define IDC_EDIT_SPEED                  1007
-#define IDC_STATIC_MODE                 1008
 #define IDC_STATIC_WORKMODE             1008
-#define IDC_STATIC_MODE_VALUE           1009
 #define IDC_STATIC_WORKMODE_VALUE       1009
 #define IDC_STATIC_DIRECTION            1010
 #define IDC_STATIC_DIRECTION_VALUE      1011
@@ -58,14 +54,9 @@
 #define IDC_BUTTON_SPEED                1035
 #define IDC_STATIC_DATA                 1036
 #define IDC_STATIC_CORRECTED_SHOW       1037
-#define IDC_STATIC_CURRENT_TIME         1037
 #define IDC_STATIC_TIME                 1037
 #define IDC_STATIC_SPEED_SHOW           1038
-#define IDC_STATIC_TRUE_DEPTH_SHOW_VALUE 1039
-#define IDC_STATIC_CURRENT_DEPTH_SHOW_VALUE 1039
 #define IDC_STATIC_DEPTH_VALUE          1039
-#define IDC_STATIC_CORRECTED_SHOW_VALUE 1040
-#define IDC_STATIC_CURRENT_TIME_VALUE   1040
 #define IDC_STATIC_TIME_VALUE           1040
 #define IDC_STATIC_SPEED_SHOW_VALUE     1041
 #define IDC_STATIC_SPEED_VALUE          1041
@@ -78,7 +69,6 @@
 #define IDC_BUTTON_START_RELOG          1047
 #define IDC_STATIC_CURRENT_DEPTH_SHOW_UNIT 1048
 #define IDC_STATIC_SPEED_SHOW_UNIT      1049
-#define IDC_BUTTON_STOP_LOG             1050
 #define IDC_BUTTON_PAUSE_LOG            1050
 
 // Next default values for new objects

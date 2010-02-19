@@ -129,7 +129,7 @@ CELISTestServerDlg::~CELISTestServerDlg()
 	
 	WritePrivateProfileString("Data File", "ACTRoot", m_actDataFileRootPath, dataConfigFilePath);
 	
-	WritePrivateProfileString("Data File", "CALVERRoot", m_calverListRootFolder, dataConfigFilePath);
+	WritePrivateProfileString("Data File", "CALVERRoot", m_calverDataFileRootPath, dataConfigFilePath);
 	
 	confStr.Format("%ld", m_dataFileBufSize/(1024*1024));
 	WritePrivateProfileString("Data File", "BufSize", confStr, dataConfigFilePath);
@@ -154,7 +154,7 @@ void CELISTestServerDlg::EnableCreateLog(BOOL enableButton)
 
 void CELISTestServerDlg::EnableStopLog(BOOL enableButton)
 {
-	GetDlgItem(IDC_BUTTON_STOP_LOG)->EnableWindow(enableButton);
+	//GetDlgItem(IDC_BUTTON_STOP_LOG)->EnableWindow(enableButton);
 	
 }
 
@@ -166,14 +166,14 @@ void CELISTestServerDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_MY_TAB, m_myTabCtrl);
 
 	DDX_Text(pDX, IDC_EDIT_SERVER_PORT, m_serverPort);
-
 	DDX_Text(pDX, IDC_EDIT_ACT_FOLDER, m_actDataFileRootPath);
-	DDX_Text(pDX, IDC_EDIT_CALVER_FOLDER, m_calverListRootFolder);
+	DDX_Text(pDX, IDC_EDIT_CALVER_FOLDER, m_calverDataFileRootPath);
+	//DDX_Text(pDX, IDC_EDIT_DATA_BUFFER_SIZE, m_dataFileBufSize);
 
 	//}}AFX_DATA_MAP
 }
 
-inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl myListCtrl, UINT32 dataFileType)
+BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	CFileFind dataFileFind;
 	BOOL isFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
@@ -183,7 +183,7 @@ inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl myListCtrl,
 	{
 		while(isDataFileFinded)
 		{
-			dataFileFind = dataFileFind.FindNextFile();
+			isDataFileFinded = dataFileFind.FindNextFile();
 			CString dataFilePath = dataFileFind.GetFilePath();
 			
 			UINT32 dataFileHeader[3];
@@ -196,13 +196,13 @@ inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl myListCtrl,
 			UINT32 toolADDR=dataFileHeader[0];
 			UINT32 subsetNo=dataFileHeader[1];
 			UINT32 realDataFileType=dataFileHeader[2];
-			if (toolADDR == atoi(myListCtrl.GetItemText(i, 1))
-				&& subsetNo == atoi(myListCtrl.GetItemText(i, 2))
+			if (toolADDR == (UINT32)atoi(myListCtrl.GetItemText(i, 1))
+				&& subsetNo == (UINT32)atoi(myListCtrl.GetItemText(i, 2))
 				&& realDataFileType == dataFileType)
 			{
 				dataFileType ? (m_calverDataFilePath = dataFilePath) 
 					: (m_actDataFilePath[i] = dataFilePath);
-				myListCtrl.SetItemText(i, 5, dataFilePath);
+				myListCtrl.SetItemText(i, dataFileType?3:5, dataFilePath);
 				dataFileFind.Close();
 				return TRUE;
 			}
@@ -214,7 +214,7 @@ inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl myListCtrl,
 	return FALSE;
 
 }
-inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl myListCtrl, UINT32 dataFileType)
+BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	UINT32 dataFileHeader[3];
 	CFile dataFile(dataFilePath, CFile::modeRead);
@@ -226,13 +226,13 @@ inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, C
 	UINT32 toolADDR=dataFileHeader[0];
 	UINT32 subsetNo=dataFileHeader[1];
 	UINT32 dataType=dataFileHeader[2];
-	if (toolADDR == atoi(myListCtrl.GetItemText(i, 1))
-		&& subsetNo == atoi(myListCtrl.GetItemText(i, 2))
+	if (toolADDR == (UINT32)atoi(myListCtrl.GetItemText(i, 1))
+		&& subsetNo == (UINT32)atoi(myListCtrl.GetItemText(i, 2))
 		&& dataType == dataFileType)//文件格式匹配
 	{
-		if (myListCtrl.GetItemText(i, 5) != dataFilePath)
+		if (myListCtrl.GetItemText(i, dataFileType?3:5) != dataFilePath)
 		{
-			myListCtrl.SetItemText(i, 5, dataFilePath);
+			myListCtrl.SetItemText(i, dataFileType?3:5, dataFilePath);
 			return TRUE;
 		} 
 		return FALSE;				
@@ -245,10 +245,10 @@ inline BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, C
 		return FALSE;
 	}
 }
-inline BOOL CELISTestServerDlg::SetAllDataFilePaths(CMyListCtrl myListCtrl, UINT32 dataFileType)
+BOOL CELISTestServerDlg::SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	BOOL findDataFile = FALSE;
-	for (ULONG i = 0; i < myListCtrl.GetItemCount(); i++)
+	for (ULONG i = 0; i < (ULONG)myListCtrl.GetItemCount(); i++)
 	{
 		findDataFile|= SetDataFilePath(i, myListCtrl, dataFileType);
 	}
@@ -524,7 +524,7 @@ BOOL CELISTestServerDlg::OnInitDialog()
 	m_actDataFileRootPath = confBuf;
 
 	GetPrivateProfileString("Data File", "CALVERRoot", lpDefault, confBuf, 1024, dataConfigFilePath);
-	m_calverListRootFolder = confBuf;
+	m_calverDataFileRootPath = confBuf;
 
 	m_dataFileBufSize = GetPrivateProfileInt("Data File", "BufSize", nDefault, dataConfigFilePath);
 
@@ -547,11 +547,11 @@ BOOL CELISTestServerDlg::OnInitDialog()
 	m_dataFileBufSize*= 1024*1024;
 	GetDlgItem(IDC_EDIT_DATA_BUFFER_SIZE)->SetWindowText(dataFileBufSizeStr);
 
-	m_cmdHandlerThread = AfxBeginThread((RUNTIME_CLASS)CCommandHandlerThread);
-	m_socketThread = AfxBeginThread((RUNTIME_CLASS)CSocketThread);
-	m_socketThread->SetCmdHandlerThreadID(m_cmdHandlerThread->m_nThreadID);
-	m_cmdHandlerThread->SetSocketThreadID(m_socketThread->m_nThreadID);
-	m_cmdHandlerThread->Init();
+	m_cmdHandlerThread = AfxBeginThread(RUNTIME_CLASS(CCommandHandlerThread));
+	m_socketThread = AfxBeginThread(RUNTIME_CLASS(CSocketThread));
+	//((CSocketThread)m_socketThread)->SetCmdHandlerThreadID(m_cmdHandlerThread->m_nThreadID);
+	//((CCommandHandlerThread)m_cmdHandlerThread)->SetSocketThreadID(m_socketThread->m_nThreadID);
+	//((CCommandHandlerThread)m_cmdHandlerThread)->Init();
 
 	UpdateData(FALSE);
 
@@ -643,53 +643,6 @@ void CELISTestServerDlg::OnSelchangeElistestserverTab(NMHDR* pNMHDR, LRESULT* pR
 	}
 }
 
-
-void CELISTestServerDlg::OnButtonActFolder() 
-{
-	// TODO: Add your control notification handler code here
-	char szPath[MAX_PATH]; //存放选择的目录路径
-    CString str;
-    ZeroMemory(szPath, sizeof(szPath)); 
-    BROWSEINFO bi;
-    bi.hwndOwner = m_hWnd;
-    bi.pidlRoot =  NULL;//m_actListRootFolder;
-    bi.pszDisplayName = szPath;
-    bi.lpszTitle = "请选择ACT数据文件的目录:";
-    bi.ulFlags = BIF_USENEWUI | BIF_RETURNONLYFSDIRS;//0
-    bi.lpfn = NULL;
-    bi.lParam = 0;
-    bi.iImage = 0;
-	
-    //弹出选择目录对话框
-    LPITEMIDLIST lp = SHBrowseForFolder(&bi);
-    if( lp && SHGetPathFromIDList(lp, szPath) ) {
-        str.Format("%s",  szPath);
-        //AfxMessageBox(_T(str));
-		GetDlgItem(IDC_EDIT_ACT_FOLDER)->SetWindowText(str);
-		m_actDataFileRootPath = str;
-		if (SetAllDataFilePaths(m_myTabCtrl.m_actDialog->m_actListCtrl, 0))
-		{
-			::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
-		}
-		
-		/*UpdateData(TRUE);
-		TabAct* actListCtrlDlg = m_tabMyTabCtrl.m_dlgAct;
-		int itemCount = actListCtrlDlg->m_listctrlAct.GetItemCount();
-		if (itemCount > 0)
-		{
-			for (int i = 0; i < itemCount; i++)
-			{
-				actListCtrlDlg->setDataFilePath(str, i);
-			}
-		}*/
-		//m_actListRootFolder=str;
-    } else {
-        //AfxMessageBox(_T("无效的目录，请重新选择!"));
-    }
-
-	
-}
-
 void CELISTestServerDlg::OnButtonServerPort() 
 {
 	// TODO: Add your control notification handler code here
@@ -697,9 +650,10 @@ void CELISTestServerDlg::OnButtonServerPort()
 	UpdateData(TRUE);
 	GetDlgItem(IDC_BUTTON_SERVER_PORT)->EnableWindow(FALSE);
 	GetDlgItem(IDC_EDIT_SERVER_PORT)->EnableWindow(FALSE);
-	
-	::SendMessage((HWND)m_socketThread->m_hThread, WM_PORT, NULL, 
+	::PostThreadMessage(m_socketThread->m_nThreadID, WM_PORT, NULL, 
 	m_dataFileBufSize);
+	/*::SendMessage((HWND)m_socketThread->m_hThread, WM_PORT, NULL, 
+	m_dataFileBufSize);*/
 }
 
 void CELISTestServerDlg::OnButtonCalverFolder() 
@@ -724,13 +678,49 @@ void CELISTestServerDlg::OnButtonCalverFolder()
         str.Format("%s",  szPath);
         //AfxMessageBox(_T(str));
 		GetDlgItem(IDC_EDIT_CALVER_FOLDER)->SetWindowText(str);
-		UpdateData(TRUE);
-		//m_actListRootFolder=str;
-    } else {
-        //AfxMessageBox(_T("无效的目录，请重新选择!"));
-    }
+		m_calverDataFileRootPath = str;
+		if (SetAllDataFilePaths(m_myTabCtrl.m_calverDialog->m_calverListCtrl, 1))
+		{
+			::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_CALVER_DATAFILE_PATH, NULL, (LPARAM)&m_calverDataFilePath);
+		}
+    } 
 	
 }
+
+void CELISTestServerDlg::OnButtonActFolder() 
+{
+	// TODO: Add your control notification handler code here
+	char szPath[MAX_PATH]; //存放选择的目录路径
+    CString str;
+    ZeroMemory(szPath, sizeof(szPath)); 
+    BROWSEINFO bi;
+    bi.hwndOwner = m_hWnd;
+    bi.pidlRoot =  NULL;//m_actListRootFolder;
+    bi.pszDisplayName = szPath;
+    bi.lpszTitle = "请选择ACT数据文件的目录:";
+    bi.ulFlags = BIF_USENEWUI | BIF_RETURNONLYFSDIRS;//0
+    bi.lpfn = NULL;
+    bi.lParam = 0;
+    bi.iImage = 0;
+	
+    //弹出选择目录对话框
+    LPITEMIDLIST lp = SHBrowseForFolder(&bi);
+    if( lp && SHGetPathFromIDList(lp, szPath) ) 
+	{
+        str.Format("%s",  szPath);
+		GetDlgItem(IDC_EDIT_ACT_FOLDER)->SetWindowText(str);
+		m_actDataFileRootPath = str;
+		if (SetAllDataFilePaths(m_myTabCtrl.m_actDialog->m_actListCtrl, 0))
+		{
+			::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
+		}
+		
+    }
+
+	
+}
+
+
 
 void CELISTestServerDlg::OnButtonDataBufferSize() 
 {

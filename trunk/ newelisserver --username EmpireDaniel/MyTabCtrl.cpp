@@ -38,6 +38,12 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CMyTabCtrl message handlers
+void CMyTabCtrl::Init()
+{
+	m_actDialog->Create(IDD_ACT_DIALOG, this);
+	m_calverDialog->Create(IDD_CALVER_DIALOG, this);
+	SetRectangle();
+}
 void CMyTabCtrl::SetRectangle()
 {
 	CRect tabRect, itemRect;
@@ -59,4 +65,13 @@ void CMyTabCtrl::SetRectangle()
 	m_actDialog->SetWindowPos(&wndTop, nX, nY, nXc, nYc, SWP_SHOWWINDOW);
 	m_calverDialog->SetWindowPos(&wndTop, nX, nY, nXc, nYc, SWP_HIDEWINDOW);
 	
+}
+
+void CMyTabCtrl::DoDataExchange(CDataExchange* pDX) 
+{
+	// TODO: Add your specialized code here and/or call the base class
+	
+	CTabCtrl::DoDataExchange(pDX);
+	DDX_Control(pDX, IDD_ACT_DIALOG, *m_actDialog);
+	DDX_Control(pDX, IDD_CALVER_DIALOG, *m_calverDialog);
 }

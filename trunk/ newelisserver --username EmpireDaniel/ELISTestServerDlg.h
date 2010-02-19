@@ -59,7 +59,7 @@ public:
 	* Data file
 	*/
 	CString m_actDataFileRootPath;
-	CString m_calverListRootFolder;
+	CString m_calverDataFileRootPath;
 	ULONG m_dataFileBufSize;
 
 	CString * m_actDataFilePath;
@@ -97,8 +97,8 @@ public:
 	/**
 	* Thread objects inheriting from CWinThread  
 	*/
-	CSocketThread * m_socketThread;
-	CCommandHandlerThread * m_cmdHandlerThread;
+	CWinThread * m_socketThread;
+	CWinThread * m_cmdHandlerThread;
 	
 	//MasterDataQueue<CMasterData>* m_pmasterDataQueue;
 	//FrontDataQueue<CFrontData> fq;
@@ -168,9 +168,9 @@ public:
 	void EnableActRootFolderSelection(BOOL enableButton);
 	void EnableCreateLog(BOOL enableButton);
 	void EnableStopLog(BOOL enableButton);
-	inline BOOL SetDataFilePath(ULONG i, CMyListCtrl myListCtrl, UINT32 dataFileType);
-	inline BOOL SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl myListCtrl, UINT32 dataFileType);
-	inline BOOL SetAllDataFilePaths(CMyListCtrl myListCtrl, UINT32 dataFileType);
+	BOOL SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType);
+	BOOL SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType);
+	BOOL SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	
 
 // Implementation
