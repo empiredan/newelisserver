@@ -24,18 +24,16 @@ public:
 	CCALVERDialog * m_calverDialog;
 // Operations
 public:
-	inline void SetElisTestServerDlg(CELISTestServerDlg * dlg;){
+	void SetElisTestServerDlg(CELISTestServerDlg * dlg){
 		m_elisTestServerDlg = dlg;
 	}
-	inline void Init(){
-		m_actDialog->Create(IDD_ACT_DIALOG, this);
-		m_calverDialog->Create(IDD_CALVER_DIALOG, this);
-		SetRectangle();
-	}
+	void Init();
 	void SetRectangle();
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMyTabCtrl)
+	protected:
+	virtual void DoDataExchange(CDataExchange* pDX);
 	//}}AFX_VIRTUAL
 
 // Implementation

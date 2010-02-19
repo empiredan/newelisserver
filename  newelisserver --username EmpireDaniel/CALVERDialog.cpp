@@ -5,6 +5,9 @@
 #include "elistestserver.h"
 #include "CALVERDialog.h"
 
+#include "ELISTestServerDlg.h"
+#include "MyTabCtrl.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -29,6 +32,7 @@ void CCALVERDialog::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CCALVERDialog)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
+	DDX_Control(pDX, IDC_LIST_CALVER, m_calverListCtrl);
 	//}}AFX_DATA_MAP
 }
 
@@ -38,6 +42,7 @@ BEGIN_MESSAGE_MAP(CCALVERDialog, CDialog)
 	ON_NOTIFY(NM_DBLCLK, IDC_LIST_CALVER, OnDblclkListCalver)
 	ON_WM_HSCROLL()
 	ON_WM_VSCROLL()
+	ON_WM_PAINT()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -57,7 +62,7 @@ void CCALVERDialog::OnDblclkListCalver(NMHDR* pNMHDR, LRESULT* pResult)
 		{
 			WIN32_FIND_DATA fd;
 			CString actDataFileRootPath = m_myTabCtrl->m_elisTestServerDlg->m_actDataFileRootPath;
-			HANDLE hFind = FindFirstFile(, &fd);
+			HANDLE hFind = FindFirstFile(actDataFileRootPath, &fd);
 			if ((hFind != INVALID_HANDLE_VALUE) && (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)){
 				//Ä¿Â¼´æÔÚ
 				CFileDialog openActDataFileDlg(TRUE, NULL, NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_FILEMUSTEXIST, "All Files(*.*)|*.*||", this);
@@ -69,7 +74,7 @@ void CCALVERDialog::OnDblclkListCalver(NMHDR* pNMHDR, LRESULT* pResult)
 					if (m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_calverListCtrl, 1))
 					{
 						::PostThreadMessage(m_myTabCtrl->m_elisTestServerDlg->m_cmdHandlerThread->m_nThreadID,
-							WM_CALVER_DATAFILE_PATH, NULL, (LPARAM)strFilePath);
+							WM_CALVER_DATAFILE_PATH, NULL, (LPARAM)&strFilePath);
 					}
 					
 				}
@@ -238,4 +243,13 @@ BOOL CCALVERDialog::OnInitDialog()
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CCALVERDialog::OnPaint() 
+{
+	CPaintDC dc(this); // device context for painting
+	
+	// TODO: Add your message handler code here
+	
+	// Do not call CDialog::OnPaint() for painting messages
 }

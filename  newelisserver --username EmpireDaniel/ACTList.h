@@ -91,7 +91,7 @@ typedef struct{
 	int	m7Length;
 }RTCSubset;
 
-inline static void net_to_host_long(RTCSubset rtcSubset)
+inline static void net_to_host_long(RTCSubset& rtcSubset)
 {
 	rtcSubset.actNo = ntohl(rtcSubset.actNo);
 	rtcSubset.switchOn = ntohl(rtcSubset.switchOn); 

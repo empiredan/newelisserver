@@ -46,7 +46,7 @@ void CDataFileBuffer::Init(SubsetData * sData)
 	{
 		m_blocks[i].subsetData = sData[i];
 		
-		m_blocks[i].blockLen = ((float)m_bufferLen*m_blocks[i].subsetData.percentateOfDataFileBuf	\
+		m_blocks[i].blockLen = (m_bufferLen*m_blocks[i].subsetData.percentateOfDataFileBuf	\
 		/m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset)*m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset;
 
 		m_blocks[i].headOfBlock = curPosOfBuffer;
