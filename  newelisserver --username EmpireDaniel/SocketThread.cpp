@@ -5,6 +5,7 @@
 #include "elistestserver.h"
 #include "SocketThread.h"
 
+#include "ELISTestServerDlg.h"
 #include "Data.h"
 
 #ifdef _DEBUG
@@ -41,6 +42,7 @@ int CSocketThread::ExitInstance()
 BEGIN_MESSAGE_MAP(CSocketThread, CWinThread)
 	//{{AFX_MSG_MAP(CSocketThread)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
+		ON_THREAD_MESSAGE(WM_CMD_HANDLER_THREAD_ID, OnCmdHandlerThreadID)
 		ON_THREAD_MESSAGE(WM_PORT, OnPort)
 		ON_THREAD_MESSAGE(WM_SEND, OnSend)
 	//}}AFX_MSG_MAP
@@ -48,6 +50,15 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSocketThread message handlers
+VOID CSocketThread::OnCmdHandlerThreadID(WPARAM wParam, LPARAM lParam)
+{
+	DWORD threadID = (DWORD)lParam;
+	m_cmdThreadID = threadID;
+	m_listenSocket.SetSocketThread(this);
+	m_listenSocket.SetCmdHandlerThreadID(threadID);
+	
+}
+
 VOID CSocketThread::OnPort(WPARAM wParam, LPARAM lParam)
 {
 	m_socketPort = (UINT)lParam;
@@ -68,6 +79,8 @@ VOID CSocketThread::OnPort(WPARAM wParam, LPARAM lParam)
 		gethostname(name,   128);//获得主机名  
 		pHost   =   gethostbyname(name);//获得主机结构  
 		serverIP   =   inet_ntoa(*((in_addr   *)pHost->h_addr));
+
+		::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_SERVER_IP_PORT, NULL, NULL);
 		
 		
 	}
@@ -83,6 +96,6 @@ VOID CSocketThread::OnPort(WPARAM wParam, LPARAM lParam)
 VOID CSocketThread::OnSend(WPARAM wParam, LPARAM lParam)
 {
 	CFrontData * frontData = (CFrontData *)lParam;
-	m_listenSocket.GetConnectSocket().Send(frontData->GetTotalBuf(), frontData->GetTotalLen(), 0);
+	m_listenSocket.GetConnectSocket()->Send(frontData->GetTotalBuf(), frontData->GetTotalLen(), 0);
 	delete frontData;
 }

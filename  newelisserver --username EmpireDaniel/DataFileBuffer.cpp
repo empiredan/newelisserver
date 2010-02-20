@@ -18,18 +18,25 @@ static char THIS_FILE[]=__FILE__;
 
 CDataFileBuffer::CDataFileBuffer()
 {
+	m_buffer = NULL;
+	m_bufferLen = 10*1024*1024;
+	m_numOfBlocks = 0;
+	m_blocks = NULL;
 	m_dataFileHeadLen = 3*sizeof(UINT32);
+	m_mode = 0;
 }
 
 CDataFileBuffer::~CDataFileBuffer()
 {
 	if (m_buffer)
 	{
-		delete []m_buffer;
+		delete [] m_buffer;
+		m_buffer = NULL;
 	}
 	if (m_blocks)
 	{
-		delete []m_blocks;
+		delete [] m_blocks;
+		m_blocks = NULL;
 	}
 
 }

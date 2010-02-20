@@ -171,6 +171,7 @@ public:
 	BOOL SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	BOOL SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	BOOL SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType);
+	void ReadConfigFile();
 	
 
 // Implementation

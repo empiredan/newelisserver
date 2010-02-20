@@ -79,7 +79,8 @@ public:
 		m_numOfBlocks = nBlocks;
 		if (m_blocks)
 		{
-			delete []m_blocks;
+			delete [] m_blocks;
+			m_blocks = NULL;
 		}
 		m_blocks = new Block[m_numOfBlocks];
 	}
@@ -87,7 +88,8 @@ public:
 		m_bufferLen = bufLen;
 		if (m_buffer)
 		{
-			delete []m_buffer;
+			delete [] m_buffer;
+			m_buffer = NULL;
 		}
 		m_buffer = new BUF_TYPE[bufLen];
 	}

@@ -9,8 +9,9 @@
 
 #include "MyListenSocket.h"
 
-#define WM_PORT WM_USER+10
-#define WM_SEND WM_USER+11
+#define WM_CMD_HANDLER_THREAD_ID WM_USER+10
+#define WM_PORT WM_USER+11
+#define WM_SEND WM_USER+12
 
 /////////////////////////////////////////////////////////////////////////////
 // CSocketThread thread
@@ -29,14 +30,16 @@ private:
 	DWORD m_cmdThreadID;
 
 	UINT m_socketPort;
+
 	CMyListenSocket m_listenSocket;
 	
 // Operations
 public:
+	/*
 	inline void SetCmdHandlerThreadID(DWORD tid){
 		m_cmdThreadID = tid;
 		m_listenSocket.SetCmdHandlerThreadID(tid);
-	}
+	}*/
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CSocketThread)
@@ -54,6 +57,7 @@ protected:
 		// NOTE - the ClassWizard will add and remove member functions here.
 		afx_msg VOID OnPort(WPARAM wParam, LPARAM lParam);
 		afx_msg VOID OnSend(WPARAM wParam, LPARAM lParam);
+		afx_msg VOID OnCmdHandlerThreadID(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

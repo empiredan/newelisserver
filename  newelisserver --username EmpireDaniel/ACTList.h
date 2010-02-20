@@ -170,14 +170,16 @@ private:
 	* The attributes related to the data returned to ELIS Client
 	**/
 	
-	ULONG m_totalReturnedSubsetDataLenOfDepthMode;
-	ULONG m_totalReturnedSubsetDataLenOfTimeMode;
-
 	SubsetData * m_subsetOfDepthMode;
 	SubsetData * m_subsetOfTimeMode;
+
 	ULONG m_rtcBlockDataHeaderLen;
+
 	ULONG m_allSubsetsLenOfAllToolSubsetOfDepthMode;
 	ULONG m_allSubsetsLenOfAllToolSubsetOfTimeMode;
+
+	ULONG m_totalReturnedSubsetDataLenOfDepthMode;
+	ULONG m_totalReturnedSubsetDataLenOfTimeMode;
 
 //Operations
 public:
@@ -248,6 +250,9 @@ public:
 		{
 			m_subsetOfDepthMode[i].rtcBlockDataHeader.currentTime = currenttime;
 		}
+	}
+	inline ACTList * GetACTList(){
+		return &m_actList;
 	}
 	inline ULONG GetACTNum(){
 		return m_actList.actNum;

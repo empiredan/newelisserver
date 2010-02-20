@@ -12,7 +12,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CMyListenSocket command target
-
+class CSocketThread;
 class CMyListenSocket : public CAsyncSocket
 {
 // Attributes
@@ -20,22 +20,28 @@ public:
 
 private:
 	//CCommandHandlerThread * m_cmdHandlerThread;
+	CSocketThread * m_socketThread;
+
 	DWORD m_cmdThreadID;
-	
+
+//public:
 	CMyConnectSocket m_connectSocket;
 
 // Operations
 public:
 	CMyListenSocket();
 	virtual ~CMyListenSocket();
+	inline void SetSocketThread(CSocketThread* st){
+		m_socketThread = st;
+	}
 	inline void SetCmdHandlerThreadID(DWORD tid){
 		//m_connectSocket.SetCmdHandlerThread(cmdHThread);
 		m_cmdThreadID = tid;
 		m_connectSocket.SetCmdHandlerThreadID(tid);
 	}
 	
-	inline CMyConnectSocket GetConnectSocket(){
-		return m_connectSocket;
+	inline CMyConnectSocket * GetConnectSocket(){
+		return &m_connectSocket;
 	}
 
 // Overrides
