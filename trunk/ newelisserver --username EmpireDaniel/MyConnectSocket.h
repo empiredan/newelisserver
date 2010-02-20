@@ -43,6 +43,7 @@ private:
 // Operations
 public:
 	CMyConnectSocket();
+	/*
 	CMyConnectSocket(const CMyConnectSocket& connectSocket){
 
 		m_cmdThreadID = connectSocket.m_cmdThreadID;
@@ -55,7 +56,7 @@ public:
 		m_bodyBuf = connectSocket.m_bodyBuf;
 		m_bodyLen = connectSocket.m_bodyLen;
 
-	}
+	}*/
 	virtual ~CMyConnectSocket();
 	inline void SetCmdHandlerThreadID(DWORD tid){
 		//m_cmdHandlerThread = cmdHThread;

@@ -46,29 +46,49 @@ void * CCommandHandlerThread::m_pObject;
 
 void CCommandHandlerThread::Init()
 {
-	ULONG m_bufferLen = 0;
+	m_cmdType = 0;
+	m_totalLen = SOCK_RECEIVE_HEADER_LEN;
+	m_headLen = SOCK_RECEIVE_HEADER_LEN;
+	m_bodyBuf = NULL;
+	m_bodyLen = 0;
 
-	long m_timeMS = 0;
-	long m_speedDUPM = 0;
-	long m_speedDUPS = 0;
+	m_bufferLen = 0;
+
+	m_timeMS = 0;
+	m_speedDUPM = 0;
+	m_speedDUPS = 0;
+	m_depthDU = 0;
 
 	m_pObject = this;
 }
 
 BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	//{{AFX_MSG_MAP(CCommandHandlerThread)
+	ON_THREAD_MESSAGE(WM_SOCKET_THREAD_ID, OnSocketThreadID)
 	ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
 	//ON_THREAD_MESSAGE(WM_TIMER, OnTimerProc)
 	ON_THREAD_MESSAGE(WM_DATABUF_LEN, OnDataBufLen)
 	ON_THREAD_MESSAGE(WM_ALL_ACT_DATAFILE_PATHS, OnAllACTDataFilePaths)
 	ON_THREAD_MESSAGE(WM_ACT_DATAFILE_PATH, OnACTDataFilePath)
 	ON_THREAD_MESSAGE(WM_CALVER_DATAFILE_PATH, OnCALVERDataFilePath)
+	ON_THREAD_MESSAGE(WM_DEPTH_DATA_TIMER, OnDepthDataTimer)
 	//ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread message handlers
+VOID CCommandHandlerThread::OnSocketThreadID(WPARAM wParam, LPARAM lParam)
+{
+	DWORD threadID = (DWORD)lParam;
+	m_socketThreadID = threadID;
+	Init();
+}
+VOID CCommandHandlerThread::OnDepthDataTimer(WPARAM wParam, LPARAM lParam)
+{
+	::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
+	
+}
 VOID CALLBACK CCommandHandlerThread::OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
 	CCommandHandlerThread * cmdHandlerThread = (CCommandHandlerThread *)m_pObject;
@@ -94,13 +114,13 @@ VOID CALLBACK CCommandHandlerThread::SubsetDataTimerProc()
 		//m_trueDepthDU+= m_cACTList.GetDepthDuDelta();
 		//m_correctedDepthDU+= m_cACTList.GetDepthDuDelta();
 		//Send the depth to the Dialog for showing
-		::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
+		::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
 		
 	case RtcSYS_STANDBY_CMD:
 		{
 			m_timeMS+= m_cACTList.GetTimeMSDelta();
 			//Send the time to the Dialog for showing
-			::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
+			::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
 			//Send to the socket thread the data ready to be 
 			//returned to ELIS Client 
 			
@@ -179,7 +199,7 @@ void CCommandHandlerThread::WorkModeProc()
 			//STANDBY TIME) and create log timer 
 			//so that the subset data can be returned to ELIS client
 			::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, 0);
-			::SetTimer(NULL, SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)OnTimerProc);
+			::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)OnTimerProc);
 			
 		}
 
@@ -378,15 +398,15 @@ void CCommandHandlerThread::NetCmd_InitServiceTable() {
 	
 	m_cACTList.Init(m_bodyBuf, m_bodyLen);
 	m_cDataFileBuffer.SetNumOfBlocks(m_cACTList.GetACTNum());
-
-	//Send the "show ACT list" message to Dialog
 	
+	//Send the "show ACT list" message to Dialog
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ACT_LIST, NULL, (LPARAM)m_cACTList.GetACTList());
 	//Get the time delta(now the work state should be 
 	//STANDBY TIME) and create log timer and depth timer
 	//so that the subset data
 	//and depth data can be returned to ELIS client
 
-	::SetTimer(NULL, DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
+	
 	//别忘了在这里要delete CMasterData类型的指针d。
 	//因为原则上，这里把这个收到的前端机发送过来的数据
 	//处理完毕，就不会再使用了，要把它删除掉。
@@ -468,8 +488,8 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 	
 	//Send the "show work state and direction" message to Dialog
 
-	::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_WORKMODE, NULL, m_cWorkMode.GetWorkMode());
-	::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DIRECTION, NULL, m_cWorkMode.GetDirection());
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_WORKMODE, NULL, m_cWorkMode.GetWorkMode());
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DIRECTION, NULL, m_cWorkMode.GetDirection());
 
 	//Response for the received "work state" command
 
@@ -645,7 +665,7 @@ void CCommandHandlerThread::NetCmd_DepthSpeed() {
 	m_speedDUPS = m_speedDUPM/60;
 	m_cACTList.SetTimeMSDeltaOfDepthMode(m_speedDUPS);
 	m_cACTList.SetDpethDUDeltaOfTimeMode(m_speedDUPS);
-	::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_SPEED, NULL, m_speedDUPM);
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_SPEED, NULL, m_speedDUPM);
 	//Send the "show speed" message to Dialog
 
 	/*
@@ -659,7 +679,7 @@ void CCommandHandlerThread::NetCmd_TrueDepth() {
 	
 	long * trueDepth = (long *)m_bodyBuf;
 	m_depthDU = ntohl(trueDepth[0]);
-	::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
 	//Send the "show true depth" message to Dialog
 
 	/*
@@ -674,7 +694,7 @@ void CCommandHandlerThread::NetCmd_CorrectedDepth() {
 	long * correctedDepth = (long *)m_bodyBuf;
 	//m_correctedDepthDU = ntohl(correctedDepth[0]);
 	m_depthDU = ntohl(correctedDepth[0]);
-	::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
 	//Send the "show corrected depth" message to Dialog
 
 	/*

@@ -5,6 +5,10 @@
 #include "elistestserver.h"
 #include "MyListenSocket.h"
 
+#include "SocketThread.h"
+#include "ELISTestServerDlg.h"
+#include "CommandHandlerThread.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -51,8 +55,11 @@ void CMyListenSocket::OnAccept(int nErrorCode)
 			
 			m_connectSocket.GetPeerName(clientIP,clientPort);
 			
-			CString strClientPort;
-			strClientPort.Format("%d",clientPort);
+			//CString strClientPort;
+			//strClientPort.Format("%d",clientPort);
+
+			::SendMessage(m_socketThread->GetMainWnd()->GetSafeHwnd(), WM_CLIENT_IP_PORT, (WPARAM)clientPort, (LPARAM)&clientIP);
+			::PostThreadMessage(m_cmdThreadID, WM_DEPTH_DATA_TIMER, NULL, NULL);
 			
 		}
 	}

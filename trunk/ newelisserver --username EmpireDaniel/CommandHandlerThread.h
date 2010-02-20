@@ -14,12 +14,13 @@
 //#include "MessageReceiverThread.h"
 //#include "MessageSenderThread.h"
 
-#define WM_COMMAND_DATA WM_USER+1
-#define WM_DATABUF_LEN WM_USER+2
-#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+3
-#define WM_ACT_DATAFILE_PATH WM_USER+4
-#define WM_CALVER_DATAFILE_PATH WM_USER+5
-
+#define WM_SOCKET_THREAD_ID WM_USER+1
+#define WM_COMMAND_DATA WM_USER+2
+#define WM_DATABUF_LEN WM_USER+3
+#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+4
+#define WM_ACT_DATAFILE_PATH WM_USER+5
+#define WM_CALVER_DATAFILE_PATH WM_USER+6
+#define WM_DEPTH_DATA_TIMER WM_USER+7
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread thread
 
@@ -78,9 +79,10 @@ private:
 public:
 	void Init();
 	static VOID CALLBACK OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+	/*
 	inline void SetSocketThreadID(DWORD tid){
 		m_socketThreadID = tid;
-	}
+	}*/
 	inline void PreProcessMasterData(CMasterData *md);
 	VOID CALLBACK SubsetDataTimerProc();
 	VOID CALLBACK DepthDataTimerProc();
@@ -130,11 +132,13 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CCommandHandlerThread)
+	afx_msg VOID OnSocketThreadID(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnCommand(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnDataBufLen(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnACTDataFilePath(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnCALVERDataFilePath(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnDepthDataTimer(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 	
 

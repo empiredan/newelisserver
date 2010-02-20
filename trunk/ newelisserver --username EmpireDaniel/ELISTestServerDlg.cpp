@@ -70,29 +70,33 @@ CELISTestServerDlg::CELISTestServerDlg(CWnd* pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(CELISTestServerDlg)
 		// NOTE: the ClassWizard will add member initialization here
-	//}}AFX_DATA_INIT
-	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
-	m_serverPort=0;
-	
-	//m_pmasterDataQueue=new MasterDataQueue<CMasterData>;
+	CString m_serverIP = "0.0.0.0";
+	m_serverPort = 0;
+	m_clientIP = "0.0.0.0";
+	m_clientPort = 0;
 
+	m_actDataFileRootPath = "";
 	m_actDataFilePath = NULL;
+	m_calverDataFileRootPath = "";
+	m_calverDataFilePath = "";
+	m_dataFileBufSize = 10*1024*1024;
+	m_actNum = 0;
 
-	m_dataFileBufSize=5*1024*1024;
-
-	m_measure = 1;
-	
+	m_speedDUPM = 0;
 	m_speedPM = 0.0;
 	m_speedPMStr.Format(FLOAT_TO_STRING_FORMAT, m_speedPM);
-	m_speedDUPM = 0;
-
+	m_depthDU = 0;
 	m_depth = 0.0;
 	m_depthStr.Format(FLOAT_TO_STRING_FORMAT, m_depth);
-	m_depthDU = 0;
-
 	m_timeS = 0.0;
 	m_timeSStr.Format(FLOAT_TO_STRING_FORMAT, m_timeS);
-	
+	m_measure = 1;
+
+	m_socketThread = NULL;
+	m_cmdHandlerThread = NULL;
+
+	//}}AFX_DATA_INIT
+	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
@@ -101,9 +105,23 @@ CELISTestServerDlg::~CELISTestServerDlg()
 	//delete this->m_pmasterDataQueue;
 	//m_pmasterDataQueue=NULL;
 
+	/*if (m_actList)
+	{
+		delete [] m_actList;
+		m_actList = NULL;
+	}*/
+	//::PostThreadMessage(m_socketThread->m_nThreadID, WM_QUIT, 0, 0);
+	//::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_QUIT, 0, 0);
+	//PostMessage();
+	
+	m_cmdHandlerThread->Delete();
+
+	m_socketThread->Delete();
+	
 	if (m_actDataFilePath)
 	{
 		delete [] m_actDataFilePath;
+		m_actDataFilePath = NULL;
 	}
 
 	CString dataConfigFileName = "dataconfig.ini";//D:\\vc6\\MyProjects\\elis\\ELISTestServer6.3.2
@@ -158,19 +176,9 @@ void CELISTestServerDlg::EnableStopLog(BOOL enableButton)
 	
 }
 
-void CELISTestServerDlg::DoDataExchange(CDataExchange* pDX)
+void CELISTestServerDlg::EnableActRootFolderSelection(BOOL enableButton)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CELISTestServerDlg)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
-	DDX_Control(pDX, IDC_MY_TAB, m_myTabCtrl);
-
-	DDX_Text(pDX, IDC_EDIT_SERVER_PORT, m_serverPort);
-	DDX_Text(pDX, IDC_EDIT_ACT_FOLDER, m_actDataFileRootPath);
-	DDX_Text(pDX, IDC_EDIT_CALVER_FOLDER, m_calverDataFileRootPath);
-	//DDX_Text(pDX, IDC_EDIT_DATA_BUFFER_SIZE, m_dataFileBufSize);
-
-	//}}AFX_DATA_MAP
+	GetDlgItem(IDC_BUTTON_ACT_FOLDER)->EnableWindow(enableButton);
 }
 
 BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType)
@@ -178,7 +186,8 @@ BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT3
 	CFileFind dataFileFind;
 	BOOL isFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
 	BOOL isDataFileFinded = isFinded;
-
+	UINT32 toolADDR = atoi(myListCtrl.GetItemText(i, 1));
+	UINT32 subsetNo = atoi(myListCtrl.GetItemText(i, 2));
 	if (isFinded)
 	{
 		while(isDataFileFinded)
@@ -193,11 +202,11 @@ BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT3
 			dataFile.Close();
 			
 			memcpy(dataFileHeader, dataFileHeaderBuf, sizeof(UINT32)*3);
-			UINT32 toolADDR=dataFileHeader[0];
-			UINT32 subsetNo=dataFileHeader[1];
-			UINT32 realDataFileType=dataFileHeader[2];
-			if (toolADDR == (UINT32)atoi(myListCtrl.GetItemText(i, 1))
-				&& subsetNo == (UINT32)atoi(myListCtrl.GetItemText(i, 2))
+			UINT32 realToolADDR = dataFileHeader[0];
+			UINT32 realSubsetNo = dataFileHeader[1];
+			UINT32 realDataFileType = dataFileHeader[2];
+			if (realToolADDR == toolADDR
+				&& realSubsetNo == subsetNo
 				&& realDataFileType == dataFileType)
 			{
 				dataFileType ? (m_calverDataFilePath = dataFilePath) 
@@ -209,11 +218,12 @@ BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT3
 		}
 	}
 	dataFileType ? (m_calverDataFilePath = "") 
-	: (m_actDataFilePath[i] = "");
+		: (m_actDataFilePath[i] = "");
 	dataFileFind.Close();
 	return FALSE;
-
+	
 }
+
 BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	UINT32 dataFileHeader[3];
@@ -221,7 +231,7 @@ BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListC
 	BUF_TYPE dataFileHeaderBuf[sizeof(UINT32)*3];
 	dataFile.Read(dataFileHeaderBuf, sizeof(UINT32)*3);
 	dataFile.Close();
-					
+	
 	memcpy(dataFileHeader, dataFileHeaderBuf, sizeof(UINT32)*3);
 	UINT32 toolADDR=dataFileHeader[0];
 	UINT32 subsetNo=dataFileHeader[1];
@@ -245,6 +255,7 @@ BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListC
 		return FALSE;
 	}
 }
+
 BOOL CELISTestServerDlg::SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	BOOL findDataFile = FALSE;
@@ -253,6 +264,21 @@ BOOL CELISTestServerDlg::SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dat
 		findDataFile|= SetDataFilePath(i, myListCtrl, dataFileType);
 	}
 	return findDataFile;
+}
+
+void CELISTestServerDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CELISTestServerDlg)
+		// NOTE: the ClassWizard will add DDX and DDV calls here
+	DDX_Control(pDX, IDC_MY_TAB, m_myTabCtrl);
+
+	DDX_Text(pDX, IDC_EDIT_SERVER_PORT, m_serverPort);
+	DDX_Text(pDX, IDC_EDIT_ACT_FOLDER, m_actDataFileRootPath);
+	DDX_Text(pDX, IDC_EDIT_CALVER_FOLDER, m_calverDataFileRootPath);
+	//DDX_Text(pDX, IDC_EDIT_DATA_BUFFER_SIZE, m_dataFileBufSize);
+
+	//}}AFX_DATA_MAP
 }
 
 BEGIN_MESSAGE_MAP(CELISTestServerDlg, CDialog)
@@ -435,7 +461,7 @@ VOID CELISTestServerDlg::OnACTListUpdated(WPARAM wParam, LPARAM lParam)
 		m_myTabCtrl.m_actDialog->m_actListCtrl.InsertItem(i, str);
 
 		itoa(m_actList->pSaList[i].toolAddress, str, 10);
-		m_myTabCtrl.m_actDialog->m_actListCtrl.SetItemText(i, 2, str);
+		m_myTabCtrl.m_actDialog->m_actListCtrl.SetItemText(i, 1, str);
 
 		itoa(m_actList->pSaList[i].subsetNo, str, 10);
 		m_myTabCtrl.m_actDialog->m_actListCtrl.SetItemText(i, 2, str);
@@ -467,7 +493,31 @@ VOID CELISTestServerDlg::OnACTListUpdated(WPARAM wParam, LPARAM lParam)
 	} 
 	
 }
-
+void CELISTestServerDlg::ReadConfigFile()
+{
+	CString dataConfigFileName = "dataconfig.ini";//D:\\vc6\\MyProjects\\elis\\ELISTestServer6.3.2
+	char currentDirectoryChar[1024];
+	GetCurrentDirectory(1024, currentDirectoryChar);
+	CString dataConfigFilePath = currentDirectoryChar;
+	dataConfigFilePath+= "\\";
+	dataConfigFilePath+= dataConfigFileName;
+	
+	LPCTSTR lpDefault;
+	INT nDefault;
+	_TCHAR confBuf[1024];
+	
+	m_measure = GetPrivateProfileInt("Parameter Setting", "Measure", nDefault, dataConfigFilePath);
+	
+	m_serverPort = GetPrivateProfileInt("Net Connection", "Port", nDefault, dataConfigFilePath);
+	
+	GetPrivateProfileString("Data File", "ACTRoot", lpDefault, confBuf, 1024, dataConfigFilePath);
+	m_actDataFileRootPath = confBuf;
+	
+	GetPrivateProfileString("Data File", "CALVERRoot", lpDefault, confBuf, 1024, dataConfigFilePath);
+	m_calverDataFileRootPath = confBuf;
+	
+	m_dataFileBufSize = GetPrivateProfileInt("Data File", "BufSize", nDefault, dataConfigFilePath);
+}
 BOOL CELISTestServerDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -505,29 +555,7 @@ BOOL CELISTestServerDlg::OnInitDialog()
 	//m_myTabCtrl.m_dlgAct->setCElisTestServerDlg(this);
 	//m_myTabCtrl.m_dlgCalVer->setCElisTestServerDlg(this);
 
-	CString dataConfigFileName = "dataconfig.ini";//D:\\vc6\\MyProjects\\elis\\ELISTestServer6.3.2
-	char currentDirectoryChar[1024];
-	GetCurrentDirectory(1024, currentDirectoryChar);
-	CString dataConfigFilePath = currentDirectoryChar;
-	dataConfigFilePath+= "\\";
-	dataConfigFilePath+= dataConfigFileName;
-
-	LPCTSTR lpDefault;
-	INT nDefault;
-	_TCHAR confBuf[1024];
-
-	m_measure = GetPrivateProfileInt("Parameter Setting", "Measure", nDefault, dataConfigFilePath);
-
-	m_serverPort = GetPrivateProfileInt("Net Connection", "Port", nDefault, dataConfigFilePath);
-
-	GetPrivateProfileString("Data File", "ACTRoot", lpDefault, confBuf, 1024, dataConfigFilePath);
-	m_actDataFileRootPath = confBuf;
-
-	GetPrivateProfileString("Data File", "CALVERRoot", lpDefault, confBuf, 1024, dataConfigFilePath);
-	m_calverDataFileRootPath = confBuf;
-
-	m_dataFileBufSize = GetPrivateProfileInt("Data File", "BufSize", nDefault, dataConfigFilePath);
-
+	ReadConfigFile();
 	
 	if (m_measure)
 	{
@@ -544,11 +572,13 @@ BOOL CELISTestServerDlg::OnInitDialog()
 	
 	CString dataFileBufSizeStr;
 	dataFileBufSizeStr.Format("%ld", m_dataFileBufSize);
-	m_dataFileBufSize*= 1024*1024;
+	m_dataFileBufSize*= 1024*1024;//WM_QUIT
 	GetDlgItem(IDC_EDIT_DATA_BUFFER_SIZE)->SetWindowText(dataFileBufSizeStr);
 
 	m_cmdHandlerThread = AfxBeginThread(RUNTIME_CLASS(CCommandHandlerThread));
 	m_socketThread = AfxBeginThread(RUNTIME_CLASS(CSocketThread));
+	::PostThreadMessage(m_socketThread->m_nThreadID, WM_CMD_HANDLER_THREAD_ID, NULL, m_cmdHandlerThread->m_nThreadID);
+	::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_SOCKET_THREAD_ID, NULL, m_socketThread->m_nThreadID);
 	//((CSocketThread)m_socketThread)->SetCmdHandlerThreadID(m_cmdHandlerThread->m_nThreadID);
 	//((CCommandHandlerThread)m_cmdHandlerThread)->SetSocketThreadID(m_socketThread->m_nThreadID);
 	//((CCommandHandlerThread)m_cmdHandlerThread)->Init();
@@ -651,7 +681,7 @@ void CELISTestServerDlg::OnButtonServerPort()
 	GetDlgItem(IDC_BUTTON_SERVER_PORT)->EnableWindow(FALSE);
 	GetDlgItem(IDC_EDIT_SERVER_PORT)->EnableWindow(FALSE);
 	::PostThreadMessage(m_socketThread->m_nThreadID, WM_PORT, NULL, 
-	m_dataFileBufSize);
+	(LPARAM)m_serverPort);
 	/*::SendMessage((HWND)m_socketThread->m_hThread, WM_PORT, NULL, 
 	m_dataFileBufSize);*/
 }
@@ -830,7 +860,4 @@ void CELISTestServerDlg::OnButtonPauseLog()
 }
 
 
-void CELISTestServerDlg::EnableActRootFolderSelection(BOOL enableButton)
-{
-	GetDlgItem(IDC_BUTTON_ACT_FOLDER)->EnableWindow(enableButton);
-}
+

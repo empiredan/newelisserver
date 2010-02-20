@@ -22,9 +22,14 @@ CMyConnectSocket::CMyConnectSocket()
 	
 	m_receivedLen = 0;
 
+	m_cmdType = 0;
+	m_totalLen = SOCK_RECEIVE_HEADER_LEN;
+
+	//m_headBuf = NULL;
 	m_headLen = SOCK_RECEIVE_HEADER_LEN;
 
 	m_bodyBuf = NULL;
+	m_bodyLen = 0;
 }
 
 CMyConnectSocket::~CMyConnectSocket()

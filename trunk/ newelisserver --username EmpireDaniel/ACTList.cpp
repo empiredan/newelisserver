@@ -19,6 +19,8 @@ static char THIS_FILE[]=__FILE__;
 CACTList::CACTList()
 {
 	m_actList.pSaList = NULL;
+	m_subsetOfDepthMode = NULL;
+	m_subsetOfTimeMode = NULL;
 }
 
 CACTList::~CACTList()
@@ -92,7 +94,7 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	for (i = 1; i < m_actList.actNum; i++)
 	{
 		int b = m_actList.pSaList[i].timeInterval;
-		int axb = m_commonTimeInterval * b;
+		//int axb = m_commonTimeInterval * b;
 		lowest_common_multiple(m_commonTimeInterval, b);
 	}
 	m_timeMSDeltaOfTimeMode = m_commonTimeInterval;
@@ -134,7 +136,7 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	m_totalReturnedSubsetDataLenOfDepthMode+= m_rtcBlockDataHeaderLen	
 	*m_actList.actNum;
 
-	for (i = 0 ;i < m_actList.actNum; i++)
+	for (i = 0 ; i < m_actList.actNum; i++)
 	{
 		m_subsetOfDepthMode[i].rtcBlockDataHeader.toolAddr =	
 		m_actList.pSaList[i].toolAddress;
