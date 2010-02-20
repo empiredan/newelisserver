@@ -484,14 +484,6 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 	
 
 	m_cWorkMode.Init(m_bodyBuf);
-	
-	
-	//Send the "show work state and direction" message to Dialog
-
-	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_WORKMODE, NULL, m_cWorkMode.GetWorkMode());
-	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DIRECTION, NULL, m_cWorkMode.GetDirection());
-
-	//Response for the received "work state" command
 
 	if (m_cWorkMode.GetWorkMode() == RtcSYS_STANDBY_CMD
 		|| m_cWorkMode.GetWorkMode() == RtcSYS_RECSTART_CMD)
@@ -499,7 +491,23 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 		m_cACTList.SetWorkMode(m_cWorkMode.GetWorkMode());
 	}
 	
+	//Send the "show work state and direction" message to Dialog
+
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_WORKMODE, NULL, m_cWorkMode.GetWorkMode());
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DIRECTION, NULL, m_cWorkMode.GetDirection());
+
+	//Response for the received "work state" command
+	
+	CFrontData * fData = new CFrontData(m_cWorkMode.GetTotalWorkModeDataLen());
+	fData->SetHeadOfBuf(NET_RETURN_WORKMODE, m_headLen);
+	UINT32 workMode, direction;
+	fData->SetBodyOfBuf((BUF_TYPE *)&(workMode = m_cWorkMode.GetWorkMode()), sizeof(UINT32));
+	fData->SetBodyOfBuf((BUF_TYPE *)&(direction = m_cWorkMode.GetDirection()), sizeof(UINT32));
+	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
+	
+	//Process the updated work mode
 	WorkModeProc();
+
 	/*
 	dlg->wms->fillWorkMode(bodyBuf, bodyLen);
 
