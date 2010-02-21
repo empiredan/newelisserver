@@ -72,7 +72,7 @@ public:
 	CString m_workModeStr;
 	UINT32 m_workMode;
 	CString m_directionStr;
-	UINT32 m_direction;
+	int m_direction;
 	
 	long m_speedDUPM;// DU per minute
 	float m_speedPM;// per minute

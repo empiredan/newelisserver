@@ -115,9 +115,9 @@ public:
 				m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
 			}
 		} 
-		else
+		/*else
 		{
-		}
+		}*/
 		
 	}
 	void WriteAllBlocks();

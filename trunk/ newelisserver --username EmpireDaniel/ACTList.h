@@ -292,14 +292,14 @@ public:
 		}
 		return 0;
 	}
-	inline RtcBLOCK_DATA_HEADER GetRtcBlockDataHeader(ULONG i){
+	inline RtcBLOCK_DATA_HEADER * GetRtcBlockDataHeader(ULONG i){
 		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
 		{
-			return m_subsetOfTimeMode[i].rtcBlockDataHeader;
+			return &m_subsetOfTimeMode[i].rtcBlockDataHeader;
 		}
 		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
 		{
-			return m_subsetOfDepthMode[i].rtcBlockDataHeader;
+			return &m_subsetOfDepthMode[i].rtcBlockDataHeader;
 		}
 		
 	}

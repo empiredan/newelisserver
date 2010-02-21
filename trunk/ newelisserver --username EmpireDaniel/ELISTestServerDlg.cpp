@@ -355,11 +355,21 @@ VOID CELISTestServerDlg::OnWorkModeUpdated(WPARAM wParam, LPARAM lParam)
 }
 VOID CELISTestServerDlg::OnDirectionUpdated(WPARAM wParam, LPARAM lParam)
 {
-	UINT32 direction = (UINT32)lParam;
+	m_direction = (int)lParam;
 
-	CString str;
-	str = (direction ? "DOWN" : "UP");
-	GetDlgItem(IDC_STATIC_DIRECTION_VALUE)->SetWindowText(str);
+	switch(m_direction)
+	{
+	case 0:
+		m_directionStr = "UP";
+		break;
+	case 1:
+		m_directionStr = "DOWN";
+		break;
+	default:
+		m_directionStr = "";
+		break;
+	}
+	GetDlgItem(IDC_STATIC_DIRECTION_VALUE)->SetWindowText(m_directionStr);
 
 }
 VOID CELISTestServerDlg::OnDepthUpdated(WPARAM wParam, LPARAM lParam)
