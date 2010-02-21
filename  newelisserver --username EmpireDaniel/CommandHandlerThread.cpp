@@ -39,10 +39,14 @@ BOOL CCommandHandlerThread::InitInstance()
 int CCommandHandlerThread::ExitInstance()
 {
 	// TODO:  perform any per-thread cleanup here
+	::KillTimer(NULL, m_subsetDataTimerIdentifier);
+	::KillTimer(NULL, m_depthDataTimerIdentifier);
 	return CWinThread::ExitInstance();
 }
 
 void * CCommandHandlerThread::m_pObject;
+//UINT CCommandHandlerThread::m_subsetDataTimerIdentifier;
+//UINT CCommandHandlerThread::m_depthDataTimerIdentifier;
 
 void CCommandHandlerThread::Init()
 {
@@ -86,68 +90,71 @@ VOID CCommandHandlerThread::OnSocketThreadID(WPARAM wParam, LPARAM lParam)
 }
 VOID CCommandHandlerThread::OnDepthDataTimer(WPARAM wParam, LPARAM lParam)
 {
-	::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
+	//::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
+	::KillTimer(NULL, m_depthDataTimerIdentifier);
+	m_depthDataTimerIdentifier = ::SetTimer(NULL, NULL, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
 	
 }
 VOID CALLBACK CCommandHandlerThread::OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
 	CCommandHandlerThread * cmdHandlerThread = (CCommandHandlerThread *)m_pObject;
-	switch (idEvent)
+	if (idEvent == cmdHandlerThread->m_subsetDataTimerIdentifier)
+	{
+		cmdHandlerThread->SubsetDataTimerProc();
+	} 
+	else if (idEvent == cmdHandlerThread->m_depthDataTimerIdentifier)
+	{
+		cmdHandlerThread->DepthDataTimerProc();
+	}
+	/*
+	switch()
 	{
 	case SUBSET_DATA_TIMER:
-		cmdHandlerThread->SubsetDataTimerProc();
 		break;
 	case DEPTH_DATA_TIMER:
-		cmdHandlerThread->DepthDataTimerProc();
 		break;
 	default:
 		break;
-	}
+	}*/
 	
 }
 VOID CALLBACK CCommandHandlerThread::SubsetDataTimerProc()
 {
-	switch (m_cWorkMode.GetWorkMode())
+	if (m_cWorkMode.GetWorkMode() == RtcSYS_RECSTART_CMD)
 	{
-	case RtcSYS_RECSTART_CMD:
 		m_depthDU+= m_cACTList.GetDepthDuDelta();
 		//m_trueDepthDU+= m_cACTList.GetDepthDuDelta();
 		//m_correctedDepthDU+= m_cACTList.GetDepthDuDelta();
 		//Send the depth to the Dialog for showing
 		::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
-		
-	case RtcSYS_STANDBY_CMD:
+	} 
+	else if(m_cWorkMode.GetWorkMode() == RtcSYS_RECSTART_CMD 
+		    || m_cWorkMode.GetWorkMode() == RtcSYS_STANDBY_CMD)
+	{
+		m_timeMS+= m_cACTList.GetTimeMSDelta();
+		//Send the time to the Dialog for showing
+		::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
+
+		//Send to the socket thread the data ready to be 
+		//returned to ELIS Client 
+		CFrontData * fData;
+		fData = new CFrontData(m_cACTList.GetTotalSubsetDataLen());
+		fData->SetHeadOfBuf(NET_RETURN_SUBSETDATA, m_headLen);
+		ULONG totalState = 0;
+		fData->SetBodyOfBuf((BUF_TYPE *)&totalState, sizeof(ULONG));
+		ULONG i;
+		for (i = 0; i < m_cACTList.GetACTNum(); i++)
 		{
-			m_timeMS+= m_cACTList.GetTimeMSDelta();
-			//Send the time to the Dialog for showing
-			::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
-			//Send to the socket thread the data ready to be 
-			//returned to ELIS Client 
+			m_cACTList.SetCurrentDepthOfSubsetData(i, m_depthDU);
+			m_cACTList.SetCurrentTimeOfSubsetData(i, m_timeMS);
+			fData->SetBodyOfBuf((BUF_TYPE *)m_cACTList.GetRtcBlockDataHeader(i), m_cACTList.GetRtcBlockDataHeaderLen());
+			fData->SetBodyOfBuf(m_cDataFileBuffer.GetCurrentPositionOfBlock(i),	m_cACTList.GetAllSubsetsLenOfOneToolSubset(i));
 			
-			CFrontData * fData = new CFrontData(m_cACTList.GetTotalSubsetDataLen());
-			fData->SetHeadOfBuf(NET_RETURN_SUBSETDATA, m_headLen);
-			ULONG totalState = 0;
-			fData->SetBodyOfBuf((BUF_TYPE *)&totalState, sizeof(ULONG));
-			for (ULONG i = 0; i <m_cACTList.GetACTNum(); i++)
-			{
-				m_cACTList.SetCurrentDepthOfSubsetData(i, m_depthDU);
-				m_cACTList.SetCurrentTimeOfSubsetData(i, m_timeMS);
-				fData->SetBodyOfBuf((BUF_TYPE *)&m_cACTList.GetRtcBlockDataHeader(i),			
-				m_cACTList.GetRtcBlockDataHeaderLen());
-
-				fData->SetBodyOfBuf(m_cDataFileBuffer.GetCurrentPositionOfBlock(i),	
-				m_cACTList.GetAllSubsetsLenOfOneToolSubset(i));
-
-				m_cDataFileBuffer.NextPositionOfBlock(i);
-			}
-			::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
-
-
-			break;
+			m_cDataFileBuffer.NextPositionOfBlock(i);
 		}
-	default:
-		break;
+		::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 	}
+	
 }
 VOID CALLBACK CCommandHandlerThread::DepthDataTimerProc()
 {
@@ -192,14 +199,17 @@ void CCommandHandlerThread::WorkModeProc()
 		{
 			if (m_cWorkMode.GetOldWorkMode() != NET_CMD_NA)
 			{
-				::KillTimer(NULL, SUBSET_DATA_TIMER);
+				//::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+				::KillTimer(NULL, m_subsetDataTimerIdentifier);
 			}
 			m_cDataFileBuffer.Init(m_cACTList.GetSubsetData());
 			//Get the time delta(now the work state should be 
 			//STANDBY TIME) and create log timer 
 			//so that the subset data can be returned to ELIS client
-			::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, 0);
-			::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)OnTimerProc);
+			m_timeMS = 0;
+			::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
+			//::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)OnTimerProc);
+			m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)OnTimerProc);
 			
 		}
 
@@ -500,9 +510,10 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 	
 	CFrontData * fData = new CFrontData(m_cWorkMode.GetTotalWorkModeDataLen());
 	fData->SetHeadOfBuf(NET_RETURN_WORKMODE, m_headLen);
-	UINT32 workMode, direction;
+	UINT32 workMode;
+	int direction;
 	fData->SetBodyOfBuf((BUF_TYPE *)&(workMode = m_cWorkMode.GetWorkMode()), sizeof(UINT32));
-	fData->SetBodyOfBuf((BUF_TYPE *)&(direction = m_cWorkMode.GetDirection()), sizeof(UINT32));
+	fData->SetBodyOfBuf((BUF_TYPE *)&(direction = m_cWorkMode.GetDirection()), sizeof(int));
 	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 	
 	//Process the updated work mode

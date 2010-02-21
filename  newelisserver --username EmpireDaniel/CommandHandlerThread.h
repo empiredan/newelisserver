@@ -71,6 +71,11 @@ private:
 //	long m_trueDepthDU = 0;
 //	long m_correctedDepthDU = 0;
 
+	//Timer
+	UINT m_subsetDataTimerIdentifier;
+	UINT m_depthDataTimerIdentifier;
+
+	//Related to thread
 	DWORD m_socketThreadID;
 
 	static void * m_pObject;

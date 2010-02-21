@@ -20,7 +20,7 @@ public:
 private:
 	UINT32 m_oldWorkMode;
 	UINT32 m_workMode;
-	UINT32 m_direction;
+	int m_direction;
 
 	ULONG m_totalReturnedWorkModeDataLen;
 //Operations
@@ -28,7 +28,7 @@ public:
 	void Init(BUF_TYPE * bodyBuf);
 	inline UINT32 GetOldWorkMode(){return m_oldWorkMode;}
 	inline UINT32 GetWorkMode(){return m_workMode;}
-	inline UINT32 GetDirection(){return m_direction;}
+	inline int GetDirection(){return m_direction;}
 	inline ULONG GetTotalWorkModeDataLen(){return m_totalReturnedWorkModeDataLen;}
 };
 
