@@ -59,7 +59,7 @@ void CMyListenSocket::OnAccept(int nErrorCode)
 			//strClientPort.Format("%d",clientPort);
 
 			::SendMessage(m_socketThread->GetMainWnd()->GetSafeHwnd(), WM_CLIENT_IP_PORT, (WPARAM)clientPort, (LPARAM)&clientIP);
-			::PostThreadMessage(m_cmdThreadID, WM_DEPTH_DATA_TIMER, NULL, NULL);
+			::PostThreadMessage(m_cmdThreadID, WM_SET_DEPTH_DATA_TIMER, NULL, NULL);
 			
 		}
 	}

@@ -37,7 +37,6 @@
 //#define WM_CLIENT_PORT WM_USER+28
 #define WM_ACT_LIST WM_USER+27
 
-
 class CELISTestServerDlg : public CDialog
 {
 // Construction

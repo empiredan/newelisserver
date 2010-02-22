@@ -6,11 +6,12 @@
 #endif // _MSC_VER > 1000
 // CommandHandlerThread.h : header file
 //
-
+#include <afxmt.h>
 #include "commands.h"
 #include "Data.h"
 #include "ACTList.h"
 #include "DataFileBuffer.h"
+
 //#include "MessageReceiverThread.h"
 //#include "MessageSenderThread.h"
 
@@ -20,7 +21,9 @@
 #define WM_ALL_ACT_DATAFILE_PATHS WM_USER+4
 #define WM_ACT_DATAFILE_PATH WM_USER+5
 #define WM_CALVER_DATAFILE_PATH WM_USER+6
-#define WM_DEPTH_DATA_TIMER WM_USER+7
+#define WM_SET_DEPTH_DATA_TIMER WM_USER+7
+#define WM_SUBSET_DATA_TIMER WM_USER+8
+#define WM_DEPTH_DATA_TIMER WM_USER+9
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread thread
 
@@ -36,6 +39,8 @@ typedef struct {
 	int   nreserved2;			//±£¡Ù
 } DPM_DISPLAY_PARA;
 
+
+
 class CCommandHandlerThread : public CWinThread
 {
 	DECLARE_DYNCREATE(CCommandHandlerThread)
@@ -44,7 +49,7 @@ protected:
 
 // Attributes
 public:
-
+	
 private:
 	//Head of received data
 	ULONG m_cmdType;
@@ -63,6 +68,7 @@ private:
 	DPM_DISPLAY_PARA m_dpmDisplayPara;
 	CWorkMode m_cWorkMode;
 	CDataFileBuffer m_cDataFileBuffer;
+	BOOL m_writeAllBlocksEnabled;
 
 	long m_timeMS;
 	long m_speedDUPM;
@@ -74,23 +80,27 @@ private:
 	//Timer
 	UINT m_subsetDataTimerIdentifier;
 	UINT m_depthDataTimerIdentifier;
+	static CCriticalSection m_timerLock;
+	//static CRITICAL_SECTION m_timerLock;
 
 	//Related to thread
 	DWORD m_socketThreadID;
 
+	//static CCommandHandlerThread * m_pObject;
 	static void * m_pObject;
 	
 // Operations
 public:
 	void Init();
-	static VOID CALLBACK OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+	//static VOID CALLBACK TimerProcWrapper(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+	static VOID CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
+	//VOID SubsetDataTimerProc();
+	//VOID DepthDataTimerProc();
 	/*
 	inline void SetSocketThreadID(DWORD tid){
 		m_socketThreadID = tid;
 	}*/
 	inline void PreProcessMasterData(CMasterData *md);
-	VOID CALLBACK SubsetDataTimerProc();
-	VOID CALLBACK DepthDataTimerProc();
 	void WorkModeProc();
 	void NetCmd_InitServiceTable();
 	void NetCmd_CalibPara();
@@ -143,6 +153,8 @@ protected:
 	afx_msg VOID OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnACTDataFilePath(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnCALVERDataFilePath(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnDepthDataTimerSetted(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnSubsetDataTimer(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnDepthDataTimer(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 	
