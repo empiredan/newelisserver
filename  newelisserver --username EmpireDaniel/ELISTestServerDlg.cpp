@@ -499,7 +499,7 @@ VOID CELISTestServerDlg::OnACTListUpdated(WPARAM wParam, LPARAM lParam)
 	}
 	if (findDataFile)
 	{
-		::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
+		m_cmdHandlerThread->PostThreadMessage(WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
 	} 
 	
 }

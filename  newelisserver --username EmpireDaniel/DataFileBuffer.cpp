@@ -48,7 +48,7 @@ void CDataFileBuffer::Init(SubsetData * sData)
 
 	//m_blocks[0] = m_buffer;
 	m_dataFileHeadLen = 3*sizeof(UINT32);
-	BUF_TYPE * curPosOfBuffer = m_buffer;
+	BUF_TYPE * curPosOfBuf = m_buffer;
 	for (ULONG i = 0; i < m_numOfBlocks; i++)
 	{
 		m_blocks[i].subsetData = sData[i];
@@ -56,11 +56,11 @@ void CDataFileBuffer::Init(SubsetData * sData)
 		m_blocks[i].blockLen = (m_bufferLen*m_blocks[i].subsetData.percentateOfDataFileBuf	\
 		/m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset)*m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset;
 
-		m_blocks[i].headOfBlock = curPosOfBuffer;
+		m_blocks[i].headOfBlock = curPosOfBuf;
 
-		m_blocks[i].curPosOfBlock = curPosOfBuffer;
+		m_blocks[i].curPosOfBlock = curPosOfBuf;
 
-		curPosOfBuffer+= m_blocks[i].blockLen;
+		curPosOfBuf+= m_blocks[i].blockLen;
 
 		m_blocks[i].realUsedBlockLen = m_blocks[i].blockLen;
 
@@ -78,7 +78,7 @@ void CDataFileBuffer::Init(ULONG i, CalibData * cData)
 
 void CDataFileBuffer::WriteAllBlocks()
 {
-	for (ULONG i = 0; i< m_bufferLen; i++)
+	for (ULONG i = 0; i < m_numOfBlocks; i++)
 	{
 		WriteBlock(i);
 	}

@@ -67,6 +67,6 @@ CFrontData::CFrontData(ULONG totalLen)
 CFrontData::~CFrontData() {
 	if (m_totalBuf)
 	{
-		delete []m_totalBuf;
+		delete [] m_totalBuf;
 	}
 }

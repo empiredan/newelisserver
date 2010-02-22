@@ -162,7 +162,7 @@ private:
 	long m_depthDUDeltaOfDepthMode;
 	long m_depthDUDeltaOfTimeMode;
 
-	UINT32 m_cWorkMmode;
+	UINT32 m_workMode;
 	
 	/**-----------------------------------------------------------------**/
 
@@ -229,24 +229,24 @@ public:
 		| (m_actList.pSaList[i].m7Length>0 ? RtcM7NVM : 0);	
 	}
 	inline void SetWorkMode(UINT32 workMode){
-		m_cWorkMmode = workMode;
+		m_workMode = workMode;
 	}
 	inline void SetCurrentDepthOfSubsetData(ULONG i, int currentdpeth){
-		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
+		if (m_workMode == RtcSYS_STANDBY_CMD)
 		{
 			m_subsetOfTimeMode[i].rtcBlockDataHeader.currentDepth = currentdpeth;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			m_subsetOfDepthMode[i].rtcBlockDataHeader.currentDepth = currentdpeth;
 		}
 	}
 	inline void SetCurrentTimeOfSubsetData(ULONG i, int currenttime){
-		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
+		if (m_workMode == RtcSYS_STANDBY_CMD)
 		{
 			m_subsetOfTimeMode[i].rtcBlockDataHeader.currentTime = currenttime;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			m_subsetOfDepthMode[i].rtcBlockDataHeader.currentTime = currenttime;
 		}
@@ -258,22 +258,22 @@ public:
 		return m_actList.actNum;
 	}
 	inline int GetTimeMSDelta(){
-		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
+		if (m_workMode == RtcSYS_STANDBY_CMD)
 		{
 			return m_timeMSDeltaOfTimeMode;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			return m_timeMSDeltaOfDepthMode;
 		}
 		return 0;
 	}
 	inline long GetDepthDuDelta(){
-		if(m_cWorkMmode == RtcSYS_STANDBY_CMD){
+		if(m_workMode == RtcSYS_STANDBY_CMD){
 
 			return m_depthDUDeltaOfTimeMode;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			return m_depthDUDeltaOfDepthMode;
 		}
@@ -282,22 +282,22 @@ public:
 	}
 	/*----------------------------------------------------------------*/
 	inline ULONG GetTotalSubsetDataLen(){
-		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
+		if (m_workMode == RtcSYS_STANDBY_CMD)
 		{
 			return m_totalReturnedSubsetDataLenOfTimeMode;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			return m_totalReturnedSubsetDataLenOfDepthMode;
 		}
 		return 0;
 	}
 	inline RtcBLOCK_DATA_HEADER * GetRtcBlockDataHeader(ULONG i){
-		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
+		if (m_workMode == RtcSYS_STANDBY_CMD)
 		{
 			return &m_subsetOfTimeMode[i].rtcBlockDataHeader;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			return &m_subsetOfDepthMode[i].rtcBlockDataHeader;
 		}
@@ -307,33 +307,33 @@ public:
 		return m_rtcBlockDataHeaderLen;
 	}
 	inline ULONG GetAllSubsetsLenOfOneToolSubset(ULONG i){
-		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
+		if (m_workMode == RtcSYS_STANDBY_CMD)
 		{
 			return m_subsetOfTimeMode[i].allSubsetsLenOfOneToolSubset;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			return m_subsetOfDepthMode[i].allSubsetsLenOfOneToolSubset;
 		}
 		return 0;
 	}
 	inline float GetPercentageOfDataFileBuf(ULONG i){
-		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
+		if (m_workMode == RtcSYS_STANDBY_CMD)
 		{
 			return m_subsetOfTimeMode[i].percentateOfDataFileBuf;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			return m_subsetOfDepthMode[i].percentateOfDataFileBuf;
 		}
 		return 0;
 	}
 	inline SubsetData * GetSubsetData(){
-		if (m_cWorkMmode == RtcSYS_STANDBY_CMD)
+		if (m_workMode == RtcSYS_STANDBY_CMD)
 		{
 			return m_subsetOfTimeMode;
 		}
-		else if(m_cWorkMmode == RtcSYS_RECSTART_CMD)
+		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
 			return m_subsetOfDepthMode;
 		}

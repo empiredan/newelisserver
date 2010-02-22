@@ -16,7 +16,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread
 
@@ -39,14 +38,22 @@ BOOL CCommandHandlerThread::InitInstance()
 int CCommandHandlerThread::ExitInstance()
 {
 	// TODO:  perform any per-thread cleanup here
-	::KillTimer(NULL, m_subsetDataTimerIdentifier);
-	::KillTimer(NULL, m_depthDataTimerIdentifier);
+	//::KillTimer(NULL, m_subsetDataTimerIdentifier);
+	//::KillTimer(NULL, m_depthDataTimerIdentifier);
+	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
 	return CWinThread::ExitInstance();
 }
 
+//Public static member variables
+//CEvent CCommandHandlerThread::writeAllBlocksEvent;
+
+//Private static member variables
 void * CCommandHandlerThread::m_pObject;
+CCriticalSection CCommandHandlerThread::m_timerLock;
 //UINT CCommandHandlerThread::m_subsetDataTimerIdentifier;
 //UINT CCommandHandlerThread::m_depthDataTimerIdentifier;
+
 
 void CCommandHandlerThread::Init()
 {
@@ -58,12 +65,15 @@ void CCommandHandlerThread::Init()
 
 	m_bufferLen = 0;
 
+	m_writeAllBlocksEnabled = FALSE;
+
 	m_timeMS = 0;
 	m_speedDUPM = 0;
 	m_speedDUPS = 0;
 	m_depthDU = 0;
 
 	m_pObject = this;
+
 }
 
 BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
@@ -75,7 +85,11 @@ BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	ON_THREAD_MESSAGE(WM_ALL_ACT_DATAFILE_PATHS, OnAllACTDataFilePaths)
 	ON_THREAD_MESSAGE(WM_ACT_DATAFILE_PATH, OnACTDataFilePath)
 	ON_THREAD_MESSAGE(WM_CALVER_DATAFILE_PATH, OnCALVERDataFilePath)
+	ON_THREAD_MESSAGE(WM_SET_DEPTH_DATA_TIMER, OnDepthDataTimerSetted)
+	ON_THREAD_MESSAGE(WM_SUBSET_DATA_TIMER, OnSubsetDataTimer)
 	ON_THREAD_MESSAGE(WM_DEPTH_DATA_TIMER, OnDepthDataTimer)
+	//ON_MESSAGE(WM_SUBSET_DATA_TIMER, OnSubsetDataTimer)
+	//ON_MESSAGE(WM_DEPTH_DATA_TIMER, OnDepthDataTimer)
 	//ON_WM_TIMER()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -88,15 +102,39 @@ VOID CCommandHandlerThread::OnSocketThreadID(WPARAM wParam, LPARAM lParam)
 	m_socketThreadID = threadID;
 	Init();
 }
-VOID CCommandHandlerThread::OnDepthDataTimer(WPARAM wParam, LPARAM lParam)
+VOID CCommandHandlerThread::OnDepthDataTimerSetted(WPARAM wParam, LPARAM lParam)
 {
-	//::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
-	::KillTimer(NULL, m_depthDataTimerIdentifier);
-	m_depthDataTimerIdentifier = ::SetTimer(NULL, NULL, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)OnTimerProc);
+	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
+	::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);
+	//::KillTimer(NULL, m_depthDataTimerIdentifier);
+	//m_depthDataTimerIdentifier = ::SetTimer(NULL, NULL, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProcWrapper);//
 	
 }
-VOID CALLBACK CCommandHandlerThread::OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+/*
+VOID CALLBACK CCommandHandlerThread::TimerProcWrapper(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
+	CCommandHandlerThread * cmdHandlerThread = (CCommandHandlerThread * )m_pObject;
+	cmdHandlerThread->TimerProc(hwnd, uMsg, idEvent, dwTime);
+
+}
+*/
+VOID CALLBACK CCommandHandlerThread::TimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+	m_timerLock.Lock();
+	CCommandHandlerThread * cmdHandlerThread = (CCommandHandlerThread * )m_pObject;
+	switch(idEvent)
+	{
+	case SUBSET_DATA_TIMER:
+		::PostThreadMessage(cmdHandlerThread->m_nThreadID, WM_SUBSET_DATA_TIMER, NULL, NULL);
+		break;
+	case DEPTH_DATA_TIMER:
+		::PostThreadMessage(cmdHandlerThread->m_nThreadID, WM_DEPTH_DATA_TIMER, NULL, NULL);
+		break;
+	}
+	m_timerLock.Unlock();
+	
+	//::EnterCriticalSection(&m_timerLock);
+	/*m_timerLock.Lock();
 	CCommandHandlerThread * cmdHandlerThread = (CCommandHandlerThread *)m_pObject;
 	if (idEvent == cmdHandlerThread->m_subsetDataTimerIdentifier)
 	{
@@ -106,21 +144,13 @@ VOID CALLBACK CCommandHandlerThread::OnTimerProc(HWND hwnd, UINT uMsg, UINT_PTR 
 	{
 		cmdHandlerThread->DepthDataTimerProc();
 	}
-	/*
-	switch()
-	{
-	case SUBSET_DATA_TIMER:
-		break;
-	case DEPTH_DATA_TIMER:
-		break;
-	default:
-		break;
-	}*/
-	
+	m_timerLock.Unlock();*/
+	//::LeaveCriticalSection(&m_timerLock);
+
 }
-VOID CALLBACK CCommandHandlerThread::SubsetDataTimerProc()
+VOID CCommandHandlerThread::OnSubsetDataTimer(WPARAM wParam, LPARAM lParam)
 {
-	if (m_cWorkMode.GetWorkMode() == RtcSYS_RECSTART_CMD)
+	/*if (m_cWorkMode.GetWorkMode() == RtcSYS_RECSTART_CMD)
 	{
 		m_depthDU+= m_cACTList.GetDepthDuDelta();
 		//m_trueDepthDU+= m_cACTList.GetDepthDuDelta();
@@ -128,8 +158,7 @@ VOID CALLBACK CCommandHandlerThread::SubsetDataTimerProc()
 		//Send the depth to the Dialog for showing
 		::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
 	} 
-	else if(m_cWorkMode.GetWorkMode() == RtcSYS_RECSTART_CMD 
-		    || m_cWorkMode.GetWorkMode() == RtcSYS_STANDBY_CMD)
+	else if(m_cWorkMode.GetWorkMode() == RtcSYS_RECSTART_CMD || m_cWorkMode.GetWorkMode() == RtcSYS_STANDBY_CMD)
 	{
 		m_timeMS+= m_cACTList.GetTimeMSDelta();
 		//Send the time to the Dialog for showing
@@ -153,10 +182,44 @@ VOID CALLBACK CCommandHandlerThread::SubsetDataTimerProc()
 			m_cDataFileBuffer.NextPositionOfBlock(i);
 		}
 		::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
+	}*/
+	switch (m_cWorkMode.GetWorkMode())
+	{
+	case RtcSYS_RECSTART_CMD:
+		m_depthDU+= m_cACTList.GetDepthDuDelta();
+		//m_trueDepthDU+= m_cACTList.GetDepthDuDelta();
+		//m_correctedDepthDU+= m_cACTList.GetDepthDuDelta();
+		//Send the depth to the Dialog for showing
+		::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_DEPTH, NULL, m_depthDU);
+	case RtcSYS_STANDBY_CMD:
+		{
+			m_timeMS+= m_cACTList.GetTimeMSDelta();
+			//Send the time to the Dialog for showing
+			::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
+			
+			//Send to the socket thread the data ready to be 
+			//returned to ELIS Client 
+			CFrontData * fData;
+			fData = new CFrontData(m_cACTList.GetTotalSubsetDataLen());
+			fData->SetHeadOfBuf(NET_RETURN_SUBSETDATA, m_headLen);
+			ULONG totalState = 0;
+			fData->SetBodyOfBuf((BUF_TYPE *)&totalState, sizeof(ULONG));
+			ULONG i;
+			for (i = 0; i < m_cACTList.GetACTNum(); i++)
+			{
+				m_cACTList.SetCurrentDepthOfSubsetData(i, m_depthDU);
+				m_cACTList.SetCurrentTimeOfSubsetData(i, m_timeMS);
+				fData->SetBodyOfBuf((BUF_TYPE *)m_cACTList.GetRtcBlockDataHeader(i), m_cACTList.GetRtcBlockDataHeaderLen());
+				fData->SetBodyOfBuf(m_cDataFileBuffer.GetCurrentPositionOfBlock(i),	m_cACTList.GetAllSubsetsLenOfOneToolSubset(i));
+				
+				m_cDataFileBuffer.NextPositionOfBlock(i);
+			}
+			::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
+		}
+		break;
 	}
-	
 }
-VOID CALLBACK CCommandHandlerThread::DepthDataTimerProc()
+VOID CCommandHandlerThread::OnDepthDataTimer(WPARAM wParam, LPARAM lParam)
 {
 	//m_dpmDisplayPara.corr_Depth = m_correctedDepthDU;
 	//m_dpmDisplayPara.true_Depth = m_trueDepthDU;
@@ -199,17 +262,33 @@ void CCommandHandlerThread::WorkModeProc()
 		{
 			if (m_cWorkMode.GetOldWorkMode() != NET_CMD_NA)
 			{
-				//::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
-				::KillTimer(NULL, m_subsetDataTimerIdentifier);
+				::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+				//::KillTimer(NULL, m_subsetDataTimerIdentifier);
 			}
-			m_cDataFileBuffer.Init(m_cACTList.GetSubsetData());
-			//Get the time delta(now the work state should be 
-			//STANDBY TIME) and create log timer 
-			//so that the subset data can be returned to ELIS client
+			
+			/**
+			* Reset the time by zero showed in the Dialog
+			**/
 			m_timeMS = 0;
-			::SendMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
-			//::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)OnTimerProc);
-			m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)OnTimerProc);
+			::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_TIME, NULL, m_timeMS);
+			
+			/**
+			* Get the data file buffer initiated,
+			* then write the data of ".dat" file to the related block 
+			**/
+			m_cDataFileBuffer.Init(m_cACTList.GetSubsetData());
+			if (m_writeAllBlocksEnabled)
+			{
+				m_cDataFileBuffer.WriteAllBlocks();
+			}
+			m_writeAllBlocksEnabled = FALSE;
+			/**
+			* Get the time delta(now the work state should be 
+			* STANDBY TIME) and create log timer 
+			* so that the subset data can be returned to ELIS client
+			**/
+			::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
+			//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProcWrapper);
 			
 		}
 
@@ -233,6 +312,7 @@ VOID CCommandHandlerThread::OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam)
 {
 	CString * actDataFile = (CString *)lParam;
 	m_cDataFileBuffer.SetDataFilePathOfAllBlocks(actDataFile);
+	m_writeAllBlocksEnabled = TRUE;
 		
 }
 VOID CCommandHandlerThread::OnACTDataFilePath(WPARAM wParam, LPARAM lParam)
