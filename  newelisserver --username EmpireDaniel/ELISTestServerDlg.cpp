@@ -64,6 +64,8 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CELISTestServerDlg dialog
 
+CMutex CELISTestServerDlg::m_accessDataFileMutex;
+
 CELISTestServerDlg::CELISTestServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CELISTestServerDlg::IDD, pParent),
 	log(".\\commandlist.txt", CFile::modeCreate|CFile::modeWrite|CFile::shareDenyNone)
@@ -102,21 +104,15 @@ CELISTestServerDlg::CELISTestServerDlg(CWnd* pParent /*=NULL*/)
 
 CELISTestServerDlg::~CELISTestServerDlg()
 {
-	//delete this->m_pmasterDataQueue;
-	//m_pmasterDataQueue=NULL;
 
-	/*if (m_actList)
-	{
-		delete [] m_actList;
-		m_actList = NULL;
-	}*/
-	//::PostThreadMessage(m_socketThread->m_nThreadID, WM_QUIT, 0, 0);
-	//::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_QUIT, 0, 0);
-	//PostMessage();
+	m_cmdHandlerThread->PostThreadMessage(WM_QUIT, 0, 0);
+	::WaitForSingleObject(m_cmdHandlerThread->m_hThread, INFINITE);
+
+	m_socketThread->PostThreadMessage(WM_QUIT, 0, 0);
+	::WaitForSingleObject(m_socketThread->m_hThread, INFINITE);
 	
-	m_cmdHandlerThread->Delete();
-
-	m_socketThread->Delete();
+	//m_cmdHandlerThread->Delete();
+	//m_socketThread->Delete();
 	
 	if (m_actDataFilePath)
 	{
@@ -181,15 +177,16 @@ void CELISTestServerDlg::EnableActRootFolderSelection(BOOL enableButton)
 	GetDlgItem(IDC_BUTTON_ACT_FOLDER)->EnableWindow(enableButton);
 }
 
-BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType)
+void CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	CFileFind dataFileFind;
 	BOOL isFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
-	BOOL isDataFileFinded = isFinded;
-	UINT32 toolADDR = atoi(myListCtrl.GetItemText(i, 1));
-	UINT32 subsetNo = atoi(myListCtrl.GetItemText(i, 2));
+	
 	if (isFinded)
 	{
+		BOOL isDataFileFinded = isFinded;
+		UINT32 toolADDR = atoi(myListCtrl.GetItemText(i, 1));
+		UINT32 subsetNo = atoi(myListCtrl.GetItemText(i, 2));
 		while(isDataFileFinded)
 		{
 			isDataFileFinded = dataFileFind.FindNextFile();
@@ -213,18 +210,18 @@ BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT3
 					: (m_actDataFilePath[i] = dataFilePath);
 				myListCtrl.SetItemText(i, dataFileType?3:5, dataFilePath);
 				dataFileFind.Close();
-				return TRUE;
+				return ;//TRUE;
 			}
 		}
 	}
 	dataFileType ? (m_calverDataFilePath = "") 
 		: (m_actDataFilePath[i] = "");
 	dataFileFind.Close();
-	return FALSE;
+	//return FALSE;
 	
 }
 
-BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType)
+void CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	UINT32 dataFileHeader[3];
 	CFile dataFile(dataFilePath, CFile::modeRead);
@@ -243,27 +240,42 @@ BOOL CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListC
 		if (myListCtrl.GetItemText(i, dataFileType?3:5) != dataFilePath)
 		{
 			myListCtrl.SetItemText(i, dataFileType?3:5, dataFilePath);
-			return TRUE;
+			m_cmdHandlerThread->PostThreadMessage(
+			dataFileType?WM_CALVER_DATAFILE_PATH:WM_ACT_DATAFILE_PATH, 
+			dataFileType?NULL:(WPARAM)i, 
+			(LPARAM)(&dataFilePath));
+			//return TRUE;
 		} 
-		return FALSE;				
+		//return FALSE;				
 	} 
 	else
 	{
 		char t[50];
 		sprintf(t, "%s", "文件选择错误,请重新选择!");
 		AfxMessageBox(_T(t));
-		return FALSE;
+		//return FALSE;
 	}
 }
 
-BOOL CELISTestServerDlg::SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType)
+void CELISTestServerDlg::SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
-	BOOL findDataFile = FALSE;
-	for (ULONG i = 0; i < (ULONG)myListCtrl.GetItemCount(); i++)
+	//BOOL findDataFile = FALSE;
+	CFileFind dataFileFind;
+	BOOL isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+	if (isRootPathFinded)
 	{
-		findDataFile|= SetDataFilePath(i, myListCtrl, dataFileType);
+		m_cmdHandlerThread->PostThreadMessage(WM_ACT_DATAFILE_ROOT_PATH, NULL, (LPARAM)(&m_actDataFileRootPath));
+		
+		for (ULONG i = 0; i < (ULONG)myListCtrl.GetItemCount(); i++)
+		{
+			//findDataFile|= SetDataFilePath(i, myListCtrl, dataFileType);
+			CELISTestServerDlg::m_accessDataFileMutex.Lock();
+			SetDataFilePath(i, myListCtrl, dataFileType);
+			CELISTestServerDlg::m_accessDataFileMutex.Unlock();
+		}
 	}
-	return findDataFile;
+	dataFileFind.Close();
+	//return findDataFile;
 }
 
 void CELISTestServerDlg::DoDataExchange(CDataExchange* pDX)
@@ -462,7 +474,9 @@ VOID CELISTestServerDlg::OnACTListUpdated(WPARAM wParam, LPARAM lParam)
 		m_actDataFilePath = NULL;
 	}
 	m_actDataFilePath = new CString[m_actNum];
-	BOOL findDataFile = FALSE;
+	//BOOL findDataFile = FALSE;
+	CFileFind dataFileFind;
+	BOOL isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
 	for (ULONG i = 0; i <m_actNum; i++)
 	{
 		char str[256];
@@ -493,14 +507,22 @@ VOID CELISTestServerDlg::OnACTListUpdated(WPARAM wParam, LPARAM lParam)
 		value_unit = str;
 		value_unit+= " ms";
 		m_myTabCtrl.m_actDialog->m_actListCtrl.SetItemText(i, 4, value_unit);
-
-		findDataFile|= SetDataFilePath(i, m_myTabCtrl.m_actDialog->m_actListCtrl, 0);
+		
+		if (isRootPathFinded)
+		{
+			//findDataFile|= SetDataFilePath(i, m_myTabCtrl.m_actDialog->m_actListCtrl, 0);
+			CELISTestServerDlg::m_accessDataFileMutex.Lock();
+			SetDataFilePath(i, m_myTabCtrl.m_actDialog->m_actListCtrl, 0);
+			CELISTestServerDlg::m_accessDataFileMutex.Unlock();
+		}	
 
 	}
+	dataFileFind.Close();
+	/*
 	if (findDataFile)
 	{
 		m_cmdHandlerThread->PostThreadMessage(WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
-	} 
+	} */
 	
 }
 void CELISTestServerDlg::ReadConfigFile()
@@ -592,6 +614,8 @@ BOOL CELISTestServerDlg::OnInitDialog()
 	//((CSocketThread)m_socketThread)->SetCmdHandlerThreadID(m_cmdHandlerThread->m_nThreadID);
 	//((CCommandHandlerThread)m_cmdHandlerThread)->SetSocketThreadID(m_socketThread->m_nThreadID);
 	//((CCommandHandlerThread)m_cmdHandlerThread)->Init();
+	m_cmdHandlerThread->PostThreadMessage(WM_ACT_DATAFILE_ROOT_PATH, NULL, (LPARAM)(&m_actDataFileRootPath));
+	m_cmdHandlerThread->PostThreadMessage(WM_DATABUF_LEN, NULL, m_dataFileBufSize);
 
 	UpdateData(FALSE);
 
@@ -719,10 +743,11 @@ void CELISTestServerDlg::OnButtonCalverFolder()
         //AfxMessageBox(_T(str));
 		GetDlgItem(IDC_EDIT_CALVER_FOLDER)->SetWindowText(str);
 		m_calverDataFileRootPath = str;
+		/*
 		if (SetAllDataFilePaths(m_myTabCtrl.m_calverDialog->m_calverListCtrl, 1))
 		{
 			::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_CALVER_DATAFILE_PATH, NULL, (LPARAM)&m_calverDataFilePath);
-		}
+		}*/
     } 
 	
 }
@@ -750,10 +775,12 @@ void CELISTestServerDlg::OnButtonActFolder()
         str.Format("%s",  szPath);
 		GetDlgItem(IDC_EDIT_ACT_FOLDER)->SetWindowText(str);
 		m_actDataFileRootPath = str;
+		SetAllDataFilePaths(m_myTabCtrl.m_actDialog->m_actListCtrl, 0);
+		/*
 		if (SetAllDataFilePaths(m_myTabCtrl.m_actDialog->m_actListCtrl, 0))
 		{
 			::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
-		}
+		}*/
 		
     }
 

@@ -65,7 +65,7 @@ void CCommandHandlerThread::Init()
 
 	m_bufferLen = 0;
 
-	m_writeAllBlocksEnabled = FALSE;
+	//m_writeAllBlocksEnabled = FALSE;
 
 	m_timeMS = 0;
 	m_speedDUPM = 0;
@@ -82,6 +82,7 @@ BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	ON_THREAD_MESSAGE(WM_COMMAND_DATA, OnCommand)
 	//ON_THREAD_MESSAGE(WM_TIMER, OnTimerProc)
 	ON_THREAD_MESSAGE(WM_DATABUF_LEN, OnDataBufLen)
+	ON_THREAD_MESSAGE(WM_ACT_DATAFILE_ROOT_PATH, OnACTDataFileRootPath)
 	ON_THREAD_MESSAGE(WM_ALL_ACT_DATAFILE_PATHS, OnAllACTDataFilePaths)
 	ON_THREAD_MESSAGE(WM_ACT_DATAFILE_PATH, OnACTDataFilePath)
 	ON_THREAD_MESSAGE(WM_CALVER_DATAFILE_PATH, OnCALVERDataFilePath)
@@ -203,7 +204,7 @@ VOID CCommandHandlerThread::OnSubsetDataTimer(WPARAM wParam, LPARAM lParam)
 			fData = new CFrontData(m_cACTList.GetTotalSubsetDataLen());
 			fData->SetHeadOfBuf(NET_RETURN_SUBSETDATA, m_headLen);
 			ULONG totalState = 0;
-			fData->SetBodyOfBuf((BUF_TYPE *)&totalState, sizeof(ULONG));
+			fData->SetBodyOfBuf((BUF_TYPE *)(&totalState), sizeof(ULONG));
 			ULONG i;
 			for (i = 0; i < m_cACTList.GetACTNum(); i++)
 			{
@@ -235,7 +236,7 @@ VOID CCommandHandlerThread::OnDepthDataTimer(WPARAM wParam, LPARAM lParam)
 	ULONG totalLen = m_headLen+sizeof(DPM_DISPLAY_PARA);
 	CFrontData * fData = new CFrontData(totalLen);
 	fData->SetHeadOfBuf(NET_RETURN_DPMPARA, m_headLen);
-	fData->SetBodyOfBuf((BUF_TYPE *)&m_dpmDisplayPara, sizeof(DPM_DISPLAY_PARA));
+	fData->SetBodyOfBuf((BUF_TYPE *)(&m_dpmDisplayPara), sizeof(DPM_DISPLAY_PARA));
 
 	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 }
@@ -277,11 +278,14 @@ void CCommandHandlerThread::WorkModeProc()
 			* then write the data of ".dat" file to the related block 
 			**/
 			m_cDataFileBuffer.Init(m_cACTList.GetSubsetData());
-			if (m_writeAllBlocksEnabled)
-			{
-				m_cDataFileBuffer.WriteAllBlocks();
-			}
-			m_writeAllBlocksEnabled = FALSE;
+			CELISTestServerDlg::m_accessDataFileMutex.Lock();
+			m_cDataFileBuffer.SetDataFilePathOfAllBlocks(m_actDataFileRootPath);
+			//if (m_writeAllBlocksEnabled)
+			//{
+			m_cDataFileBuffer.WriteAllBlocks();
+			CELISTestServerDlg::m_accessDataFileMutex.Unlock();
+			//}
+			//m_writeAllBlocksEnabled = FALSE;
 			/**
 			* Get the time delta(now the work state should be 
 			* STANDBY TIME) and create log timer 
@@ -308,11 +312,15 @@ VOID CCommandHandlerThread::OnDataBufLen(WPARAM wParam, LPARAM lParam)
 	ULONG dataFileBufferLen = (ULONG)lParam;
 	m_cDataFileBuffer.SetBufferLen(dataFileBufferLen);
 }
+VOID CCommandHandlerThread::OnACTDataFileRootPath(WPARAM wParam, LPARAM lParam)
+{
+	m_actDataFileRootPath = *((CString *)lParam);
+}
 VOID CCommandHandlerThread::OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam)
 {
 	CString * actDataFile = (CString *)lParam;
 	m_cDataFileBuffer.SetDataFilePathOfAllBlocks(actDataFile);
-	m_writeAllBlocksEnabled = TRUE;
+	//m_writeAllBlocksEnabled = TRUE;
 		
 }
 VOID CCommandHandlerThread::OnACTDataFilePath(WPARAM wParam, LPARAM lParam)
@@ -488,7 +496,6 @@ void CCommandHandlerThread::NetCmd_InitServiceTable() {
 	
 	m_cACTList.Init(m_bodyBuf, m_bodyLen);
 	m_cDataFileBuffer.SetNumOfBlocks(m_cACTList.GetACTNum());
-	
 	//Send the "show ACT list" message to Dialog
 	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ACT_LIST, NULL, (LPARAM)m_cACTList.GetACTList());
 	//Get the time delta(now the work state should be 

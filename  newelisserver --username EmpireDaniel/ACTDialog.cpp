@@ -71,11 +71,13 @@ void CACTDialog::OnDblclkListAct(NMHDR* pNMHDR, LRESULT* pResult)
 				if (openActDataFileDlg.DoModal()==IDOK)
 				{
 					strFilePath = openActDataFileDlg.GetPathName();
+					m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_actListCtrl, 0);
+					/*
 					if (m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_actListCtrl, 0))
 					{
 						::PostThreadMessage(m_myTabCtrl->m_elisTestServerDlg->m_cmdHandlerThread->m_nThreadID,
 						WM_ACT_DATAFILE_PATH, (WPARAM)rowNo, (LPARAM)&strFilePath);
-					}
+					}*/
 					
 				}
 			}else{

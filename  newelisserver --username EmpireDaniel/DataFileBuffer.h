@@ -64,6 +64,7 @@ private:
 	BUF_TYPE * m_buffer;
 	ULONG m_bufferLen;
 	ULONG m_numOfBlocks;
+	CString m_actDataFileRootPath;
 	Block * m_blocks;
 	ULONG m_dataFileHeadLen;
 
@@ -124,6 +125,7 @@ public:
 	inline void WriteBlock(ULONG i);
 	inline void WriteBlocksByReadFile(ULONG i);
 	inline void WriteBlockByRandomNumber(ULONG i);
+	void SetDataFilePathOfAllBlocks(CString  rootPath);
 	inline void SetDataFilePathOfAllBlocks(CString * filePath){
 		for (ULONG i = 0; i < m_numOfBlocks; i++)
 		{
