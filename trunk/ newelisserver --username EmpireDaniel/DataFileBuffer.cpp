@@ -199,9 +199,9 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 		
 		for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
 		{
-			memcpy(pBlock, (BUF_TYPE *)m_blocks[i].subsetData.status, statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)(&m_blocks[i].subsetData.status), statusTypeLen);
 			pBlock+= statusTypeLen;
-			memcpy(pBlock, (BUF_TYPE *)m_blocks[i].subsetData.time, statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)(&m_blocks[i].subsetData.time), statusTypeLen);
 			pBlock+= statusTypeLen;
 			BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].subsetData.rtcBlockDataHeader.dataSize-2*statusTypeLen);
 			for ( ; pBlock < subsetEnd; pBlock++)
@@ -216,9 +216,9 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 		
 		for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
 		{
-			memcpy(pBlock, (BUF_TYPE *)m_blocks[i].calibData.status, statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)(&m_blocks[i].calibData.status), statusTypeLen);
 			pBlock+= statusTypeLen;
-			memcpy(pBlock, (BUF_TYPE *)m_blocks[i].calibData.time, statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)(&m_blocks[i].calibData.time), statusTypeLen);
 			pBlock+= statusTypeLen;
 			/*
 			BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].calibData-2*statusTypeLen);
@@ -231,4 +231,44 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 	}
 	
 
+}
+
+void CDataFileBuffer::SetDataFilePathOfAllBlocks(CString rootPath)
+{
+	m_actDataFileRootPath = rootPath;
+	CFileFind dataFileFind;
+	BOOL isFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+	if (isFinded)
+	{
+		for (ULONG i = 0; i < m_numOfBlocks; i++)
+		{
+			BOOL isDataFileFinded = isFinded;
+			while(isDataFileFinded)
+			{
+				isDataFileFinded = dataFileFind.FindNextFile();
+				CString dataFilePath = dataFileFind.GetFilePath();
+
+				UINT32 dataFileHeader[3];
+				CFile dataFile(dataFilePath, CFile::modeRead);
+				BUF_TYPE dataFileHeaderBuf[sizeof(UINT32)*3];
+				dataFile.Read(dataFileHeaderBuf, sizeof(UINT32)*3);
+				dataFile.Close();
+				
+				memcpy(dataFileHeader, dataFileHeaderBuf, sizeof(UINT32)*3);
+				UINT32 toolADDR = dataFileHeader[0];
+				UINT32 subsetNo = dataFileHeader[1];
+				UINT32 dataFileType = dataFileHeader[2];
+				if (toolADDR == m_blocks[i].subsetData.rtcBlockDataHeader.toolAddr
+					&& subsetNo == m_blocks[i].subsetData.rtcBlockDataHeader.subset
+					&& dataFileType == 0)
+				{
+					m_blocks[i].subsetDataFilePath = dataFilePath;
+					break;
+				}//if
+			}//while
+
+		}//for
+	}//if
+	dataFileFind.Close();
+	
 }

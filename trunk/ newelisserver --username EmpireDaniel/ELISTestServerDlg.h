@@ -37,6 +37,8 @@
 //#define WM_CLIENT_PORT WM_USER+28
 #define WM_ACT_LIST WM_USER+27
 
+
+
 class CELISTestServerDlg : public CDialog
 {
 // Construction
@@ -45,6 +47,8 @@ public:
 	virtual ~CELISTestServerDlg();
 
 // Attributes
+public:
+	static CMutex m_accessDataFileMutex;
 public:
 	/**
 	* Net connection
@@ -64,6 +68,8 @@ public:
 	CString * m_actDataFilePath;
 	ULONG m_actNum;
 	CString m_calverDataFilePath;
+
+	
 
 	/**
 	* Parameters showing
@@ -167,9 +173,9 @@ public:
 	void EnableActRootFolderSelection(BOOL enableButton);
 	void EnableCreateLog(BOOL enableButton);
 	void EnableStopLog(BOOL enableButton);
-	BOOL SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType);
-	BOOL SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType);
-	BOOL SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType);
+	void SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType);
+	void SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType);
+	void SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	void ReadConfigFile();
 	
 

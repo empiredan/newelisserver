@@ -18,12 +18,13 @@
 #define WM_SOCKET_THREAD_ID WM_USER+1
 #define WM_COMMAND_DATA WM_USER+2
 #define WM_DATABUF_LEN WM_USER+3
-#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+4
-#define WM_ACT_DATAFILE_PATH WM_USER+5
-#define WM_CALVER_DATAFILE_PATH WM_USER+6
-#define WM_SET_DEPTH_DATA_TIMER WM_USER+7
-#define WM_SUBSET_DATA_TIMER WM_USER+8
-#define WM_DEPTH_DATA_TIMER WM_USER+9
+#define WM_ACT_DATAFILE_ROOT_PATH WM_USER+4
+#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+5
+#define WM_ACT_DATAFILE_PATH WM_USER+6
+#define WM_CALVER_DATAFILE_PATH WM_USER+7
+#define WM_SET_DEPTH_DATA_TIMER WM_USER+8
+#define WM_SUBSET_DATA_TIMER WM_USER+9
+#define WM_DEPTH_DATA_TIMER WM_USER+10
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread thread
 
@@ -62,13 +63,13 @@ private:
 	ULONG m_bodyLen;
 
 	ULONG m_bufferLen;
-	//CString m_actRootPath;
+	CString m_actDataFileRootPath;
 
 	CACTList m_cACTList;
 	DPM_DISPLAY_PARA m_dpmDisplayPara;
 	CWorkMode m_cWorkMode;
 	CDataFileBuffer m_cDataFileBuffer;
-	BOOL m_writeAllBlocksEnabled;
+	//BOOL m_writeAllBlocksEnabled;
 
 	long m_timeMS;
 	long m_speedDUPM;
@@ -148,11 +149,18 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CCommandHandlerThread)
 	afx_msg VOID OnSocketThreadID(WPARAM wParam, LPARAM lParam);
+
 	afx_msg VOID OnCommand(WPARAM wParam, LPARAM lParam);
+
 	afx_msg VOID OnDataBufLen(WPARAM wParam, LPARAM lParam);
+
+	afx_msg VOID OnACTDataFileRootPath(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnCALVERDataFileRootPath(WPARAM wParam, LPARAM lParam);
+	
 	afx_msg VOID OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnACTDataFilePath(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnCALVERDataFilePath(WPARAM wParam, LPARAM lParam);
+
 	afx_msg VOID OnDepthDataTimerSetted(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnSubsetDataTimer(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnDepthDataTimer(WPARAM wParam, LPARAM lParam);

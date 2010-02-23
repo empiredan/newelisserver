@@ -71,11 +71,13 @@ void CCALVERDialog::OnDblclkListCalver(NMHDR* pNMHDR, LRESULT* pResult)
 				if (openActDataFileDlg.DoModal()==IDOK)
 				{
 					strFilePath = openActDataFileDlg.GetPathName();
+					m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_calverListCtrl, 1);
+					/*
 					if (m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_calverListCtrl, 1))
 					{
 						::PostThreadMessage(m_myTabCtrl->m_elisTestServerDlg->m_cmdHandlerThread->m_nThreadID,
 							WM_CALVER_DATAFILE_PATH, NULL, (LPARAM)&strFilePath);
-					}
+					}*/
 					
 				}
 			}else{
