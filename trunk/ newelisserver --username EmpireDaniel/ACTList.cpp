@@ -71,7 +71,7 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	* Because the value of speed has not been received from Dialog
 	* We can't calculate the value of time delta
 	**/
-	int m_commonDepthSampleRate = m_actList.pSaList[0].depthSampleRate;
+	m_commonDepthSampleRate = m_actList.pSaList[0].depthSampleRate;
 	for (i = 1; i < m_actList.actNum; i++)
 	{
 		int b = m_actList.pSaList[i].depthSampleRate;
@@ -90,7 +90,7 @@ void CACTList::Init(BUF_TYPE * bodyBuf, ULONG bodyLen)
 	/**
 	* For Time Mode
 	**/
-	int m_commonTimeInterval = m_actList.pSaList[0].timeInterval;
+	m_commonTimeInterval = m_actList.pSaList[0].timeInterval;
 	for (i = 1; i < m_actList.actNum; i++)
 	{
 		int b = m_actList.pSaList[i].timeInterval;

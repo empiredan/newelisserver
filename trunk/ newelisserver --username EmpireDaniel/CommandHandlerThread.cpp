@@ -22,6 +22,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CCommandHandlerThread, CWinThread)
 
 CCommandHandlerThread::CCommandHandlerThread()
+: m_logFile(".\\Elis_Test_Server_Log.txt", CFile::modeCreate|CFile::modeWrite)
 {
 }
 
