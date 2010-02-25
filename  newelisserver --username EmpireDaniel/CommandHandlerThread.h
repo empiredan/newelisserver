@@ -89,6 +89,9 @@ private:
 
 	//static CCommandHandlerThread * m_pObject;
 	static void * m_pObject;
+
+	//Log file
+	CFile m_logFile;
 	
 // Operations
 public:

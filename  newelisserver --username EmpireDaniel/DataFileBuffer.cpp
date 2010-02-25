@@ -237,20 +237,20 @@ void CDataFileBuffer::SetDataFilePathOfAllBlocks(CString rootPath)
 {
 	m_actDataFileRootPath = rootPath;
 	CFileFind dataFileFind;
-	BOOL isFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
-	if (isFinded)
+	BOOL isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+	if (isRootPathFinded)
 	{
 		for (ULONG i = 0; i < m_numOfBlocks; i++)
 		{
-			BOOL isDataFileFinded = isFinded;
-			while(isDataFileFinded)
+			BOOL isDataFilePathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+			while(isDataFilePathFinded)
 			{
-				isDataFileFinded = dataFileFind.FindNextFile();
+				isDataFilePathFinded = dataFileFind.FindNextFile();
 				CString dataFilePath = dataFileFind.GetFilePath();
 
 				UINT32 dataFileHeader[3];
-				CFile dataFile(dataFilePath, CFile::modeRead);
 				BUF_TYPE dataFileHeaderBuf[sizeof(UINT32)*3];
+				CFile dataFile(dataFilePath, CFile::modeRead);
 				dataFile.Read(dataFileHeaderBuf, sizeof(UINT32)*3);
 				dataFile.Close();
 				

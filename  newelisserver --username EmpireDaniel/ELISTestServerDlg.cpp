@@ -180,21 +180,21 @@ void CELISTestServerDlg::EnableActRootFolderSelection(BOOL enableButton)
 void CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	CFileFind dataFileFind;
-	BOOL isFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+	BOOL isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
 	
-	if (isFinded)
+	if (isRootPathFinded)
 	{
-		BOOL isDataFileFinded = isFinded;
+		BOOL isDataFilePathFinded = isRootPathFinded;
 		UINT32 toolADDR = atoi(myListCtrl.GetItemText(i, 1));
 		UINT32 subsetNo = atoi(myListCtrl.GetItemText(i, 2));
-		while(isDataFileFinded)
+		while(isDataFilePathFinded)
 		{
-			isDataFileFinded = dataFileFind.FindNextFile();
+			isDataFilePathFinded = dataFileFind.FindNextFile();
 			CString dataFilePath = dataFileFind.GetFilePath();
 			
 			UINT32 dataFileHeader[3];
-			CFile dataFile(dataFilePath, CFile::modeRead);
 			BUF_TYPE dataFileHeaderBuf[sizeof(UINT32)*3];
+			CFile dataFile(dataFilePath, CFile::modeRead);
 			dataFile.Read(dataFileHeaderBuf, sizeof(UINT32)*3);
 			dataFile.Close();
 			
@@ -224,8 +224,8 @@ void CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT3
 void CELISTestServerDlg::SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	UINT32 dataFileHeader[3];
-	CFile dataFile(dataFilePath, CFile::modeRead);
 	BUF_TYPE dataFileHeaderBuf[sizeof(UINT32)*3];
+	CFile dataFile(dataFilePath, CFile::modeRead);
 	dataFile.Read(dataFileHeaderBuf, sizeof(UINT32)*3);
 	dataFile.Close();
 	
