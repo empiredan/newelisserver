@@ -43,6 +43,7 @@ int CCommandHandlerThread::ExitInstance()
 	//::KillTimer(NULL, m_depthDataTimerIdentifier);
 	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
 	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
+	m_logFile.Close();
 	return CWinThread::ExitInstance();
 }
 
@@ -207,15 +208,23 @@ VOID CCommandHandlerThread::OnSubsetDataTimer(WPARAM wParam, LPARAM lParam)
 			ULONG totalState = 0;
 			fData->SetBodyOfBuf((BUF_TYPE *)(&totalState), sizeof(ULONG));
 			ULONG i;
+			char logContent[8192];
+			sprintf(logContent, "Assembling begun now. \n");
 			for (i = 0; i < m_cACTList.GetACTNum(); i++)
 			{
 				m_cACTList.SetCurrentDepthOfSubsetData(i, m_depthDU);
 				m_cACTList.SetCurrentTimeOfSubsetData(i, m_timeMS);
+				sprintf(logContent, "%sAssembling subset in the Block numbered by %d. ", logContent, i);
 				fData->SetBodyOfBuf((BUF_TYPE *)m_cACTList.GetRtcBlockDataHeader(i), m_cACTList.GetRtcBlockDataHeaderLen());
+				sprintf(logContent, "%sBegin to write data. ", logContent);
 				fData->SetBodyOfBuf(m_cDataFileBuffer.GetCurrentPositionOfBlock(i),	m_cACTList.GetAllSubsetsLenOfOneToolSubset(i));
-				
+				sprintf(logContent, "%sChange for the next position in this Block. ", logContent);
 				m_cDataFileBuffer.NextPositionOfBlock(i);
+				sprintf(logContent, "%sAssembling subset finished now.\n", logContent);
+
 			}
+			m_logFile.Write(logContent, strlen(logContent));
+			m_logFile.Flush();
 			::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 		}
 		break;
@@ -772,8 +781,21 @@ void CCommandHandlerThread::NetCmd_DepthSpeed() {
 	m_speedDUPS = m_speedDUPM/60;
 	m_cACTList.SetTimeMSDeltaOfDepthMode(m_speedDUPS);
 	m_cACTList.SetDpethDUDeltaOfTimeMode(m_speedDUPS);
-	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_SPEED, NULL, m_speedDUPM);
+
+	switch (m_cWorkMode.GetWorkMode())
+	{
+	case RtcSYS_RECSTART_CMD:
+		
+	case RtcSYS_STANDBY_CMD:
+		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+		//::KillTimer(NULL, m_subsetDataTimerIdentifier);
+		::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
+		//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProcWrapper);
+		break;
+	}
+	
 	//Send the "show speed" message to Dialog
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_SPEED, NULL, m_speedDUPM);
 
 	/*
 	char logdata[1024];
