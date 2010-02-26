@@ -103,9 +103,9 @@ void CCALVERDialog::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	
 	switch(nSBCode){
 	case SB_THUMBTRACK:
-		ScrollWindow(-(nPos-oPos),0);//滚动条向右移动时,dlg窗口其实是在向左移动.pos表示原始位置,nPos表示新位置
+		ScrollWindow(-((int)nPos-oPos),0);//滚动条向右移动时,dlg窗口其实是在向左移动.pos表示原始位置,nPos表示新位置
 		//RedrawWindow();
-		SetScrollPos(SB_HORZ,nPos);
+		SetScrollPos(SB_HORZ,(int)nPos);
 		break;
 	case SB_LINELEFT://滚动条向左移动
 		if (oPos!=0)
@@ -157,9 +157,9 @@ void CCALVERDialog::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	
 	switch(nSBCode){
 	case SB_THUMBTRACK:
-		ScrollWindow(0,-(nPos-oPos));//滚动条向右移动时,dlg窗口其实是在向左移动.pos表示原始位置,nPos表示新位置
+		ScrollWindow(0,-((int)nPos-oPos));//滚动条向右移动时,dlg窗口其实是在向左移动.pos表示原始位置,nPos表示新位置
 		//RedrawWindow();
-		SetScrollPos(SB_VERT,nPos);
+		SetScrollPos(SB_VERT,(int)nPos);
 		break;
 	case SB_LINEUP://滚动条向左移动
 		if (oPos!=0)

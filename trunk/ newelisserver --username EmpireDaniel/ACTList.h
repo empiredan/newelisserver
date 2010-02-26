@@ -190,13 +190,13 @@ public:
 		{
 			if (m_actList.nDepthInterruptMode)
 			{
-				m_timeMSDeltaOfDepthMode = 1000*METRIC_DU		\
-					/(speedDUPS*m_commonDepthSampleRate)+0.5;
+				m_timeMSDeltaOfDepthMode = (int)((float)1000*METRIC_DU	\
+					/(speedDUPS*m_commonDepthSampleRate)+0.5);
 			} 
 			else
 			{
-				m_timeMSDeltaOfDepthMode = 1000*IMPERIAL_DU	\
-					/(speedDUPS*m_commonDepthSampleRate)+0.5;
+				m_timeMSDeltaOfDepthMode = (int)((float)1000*IMPERIAL_DU	\
+					/(speedDUPS*m_commonDepthSampleRate)+0.5);
 			}
 		} 
 		else
@@ -301,6 +301,7 @@ public:
 		{
 			return &m_subsetOfDepthMode[i].rtcBlockDataHeader;
 		}
+		return NULL;
 		
 	}
 	inline ULONG GetRtcBlockDataHeaderLen(){

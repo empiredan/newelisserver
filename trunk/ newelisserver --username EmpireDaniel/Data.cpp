@@ -68,5 +68,6 @@ CFrontData::~CFrontData() {
 	if (m_totalBuf)
 	{
 		delete [] m_totalBuf;
+		m_totalBuf = NULL;
 	}
 }

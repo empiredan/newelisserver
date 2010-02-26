@@ -206,7 +206,7 @@ VOID CCommandHandlerThread::OnSubsetDataTimer(WPARAM wParam, LPARAM lParam)
 			fData = new CFrontData(m_cACTList.GetTotalSubsetDataLen());
 			fData->SetHeadOfBuf(NET_RETURN_SUBSETDATA, m_headLen);
 			ULONG totalState = 0;
-			fData->SetBodyOfBuf((BUF_TYPE *)(&totalState), sizeof(ULONG));
+			fData->SetBodyOfBuf((BUF_TYPE *)&totalState, sizeof(ULONG));
 			ULONG i;
 			char logContent[8192];
 			sprintf(logContent, "Assembling begun now. \n");
@@ -236,7 +236,7 @@ VOID CCommandHandlerThread::OnDepthDataTimer(WPARAM wParam, LPARAM lParam)
 	//m_dpmDisplayPara.true_Depth = m_trueDepthDU;
 	m_dpmDisplayPara.corr_Depth = m_depthDU;
 	m_dpmDisplayPara.true_Depth = m_depthDU;
-	m_dpmDisplayPara.speed = m_speedDUPM/60;
+	m_dpmDisplayPara.speed = m_speedDUPM;
 	m_dpmDisplayPara.totalTension = 5;
 	m_dpmDisplayPara.mmd = 0;
 	m_dpmDisplayPara.differTension = 2;
@@ -246,7 +246,7 @@ VOID CCommandHandlerThread::OnDepthDataTimer(WPARAM wParam, LPARAM lParam)
 	ULONG totalLen = m_headLen+sizeof(DPM_DISPLAY_PARA);
 	CFrontData * fData = new CFrontData(totalLen);
 	fData->SetHeadOfBuf(NET_RETURN_DPMPARA, m_headLen);
-	fData->SetBodyOfBuf((BUF_TYPE *)(&m_dpmDisplayPara), sizeof(DPM_DISPLAY_PARA));
+	fData->SetBodyOfBuf((BUF_TYPE *)&m_dpmDisplayPara, sizeof(DPM_DISPLAY_PARA));
 
 	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 }
