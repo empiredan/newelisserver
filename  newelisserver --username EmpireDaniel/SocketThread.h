@@ -9,9 +9,9 @@
 
 #include "MyListenSocket.h"
 
-#define WM_CMD_HANDLER_THREAD_ID WM_USER+10
-#define WM_PORT WM_USER+11
-#define WM_SEND WM_USER+12
+#define WM_CMD_HANDLER_THREAD_ID WM_USER+1
+#define WM_PORT WM_USER+2
+#define WM_SEND WM_USER+3
 
 /////////////////////////////////////////////////////////////////////////////
 // CSocketThread thread

@@ -26,6 +26,7 @@ private:
 //Operations
 public:
 	void Init(BUF_TYPE * bodyBuf);
+	inline void SetOldWorkMode(UINT32 oldWorkMode){m_oldWorkMode = oldWorkMode;}
 	inline UINT32 GetOldWorkMode(){return m_oldWorkMode;}
 	inline UINT32 GetWorkMode(){return m_workMode;}
 	inline int GetDirection(){return m_direction;}

@@ -93,6 +93,8 @@ CELISTestServerDlg::CELISTestServerDlg(CWnd* pParent /*=NULL*/)
 	m_timeS = 0.0;
 	m_timeSStr.Format(FLOAT_TO_STRING_FORMAT, m_timeS);
 	m_measure = 1;
+	m_isStartLogEnabled = FALSE;
+	m_isPauseLogEnabled = FALSE;
 
 	m_socketThread = NULL;
 	m_cmdHandlerThread = NULL;
@@ -160,21 +162,24 @@ CELISTestServerDlg::~CELISTestServerDlg()
 	log.Close();
 }
 
-void CELISTestServerDlg::EnableCreateLog(BOOL enableButton)
+void CELISTestServerDlg::EnableStartLog(BOOL enableButton)
 {
-	GetDlgItem(IDC_BUTTON_CREATE_LOG)->EnableWindow(enableButton);
-	
+	GetDlgItem(IDC_BUTTON_START_LOG)->EnableWindow(enableButton);
 }
 
-void CELISTestServerDlg::EnableStopLog(BOOL enableButton)
+void CELISTestServerDlg::EnablePauseLog(BOOL enableButton)
 {
-	//GetDlgItem(IDC_BUTTON_STOP_LOG)->EnableWindow(enableButton);
-	
+	GetDlgItem(IDC_BUTTON_PAUSE_LOG)->EnableWindow(enableButton);	
 }
 
-void CELISTestServerDlg::EnableActRootFolderSelection(BOOL enableButton)
+void CELISTestServerDlg::EnableACTRootFolderSelection(BOOL enableButton)
 {
 	GetDlgItem(IDC_BUTTON_ACT_FOLDER)->EnableWindow(enableButton);
+}
+
+void CELISTestServerDlg::EnableCALVERRootFolderSelection(BOOL enableButton)
+{
+	GetDlgItem(IDC_BUTTON_CALVER_FOLDER)->EnableWindow(enableButton);
 }
 
 void CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType)
@@ -311,7 +316,7 @@ BEGIN_MESSAGE_MAP(CELISTestServerDlg, CDialog)
 	//ON_BN_CLICKED(IDC_BUTTON_TRUE_DEPTH, OnButtonTrueDepth)
 	ON_BN_CLICKED(IDC_RADIO_IMPERIAL, OnRadioImperial)
 	ON_BN_CLICKED(IDC_RADIO_METRIC, OnRadioMetric)
-	ON_BN_CLICKED(IDC_BUTTON_CREATE_LOG, OnButtonCreateLog)
+	ON_BN_CLICKED(IDC_BUTTON_START_LOG, OnButtonStartLog)
 	ON_BN_CLICKED(IDC_BUTTON_PAUSE_LOG, OnButtonPauseLog)
 	//ON_MESSAGE
 	ON_MESSAGE(WM_WORKMODE, OnWorkModeUpdated)
@@ -326,6 +331,8 @@ BEGIN_MESSAGE_MAP(CELISTestServerDlg, CDialog)
 	//ON_MESSAGE(WM_CLIENT_IP, OnShowClientIP)
 	//ON_MESSAGE(WM_CLIENT_PORT, OnShowClientPort)
 	ON_MESSAGE(WM_ACT_LIST, OnACTListUpdated)
+	ON_MESSAGE(WM_ENABLE_START_LOG, OnStartLogEnabled)
+	ON_MESSAGE(WM_ENABLE_PAUSE_LOG, OnPauseLogEnabled)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -339,11 +346,15 @@ VOID CELISTestServerDlg::OnWorkModeUpdated(WPARAM wParam, LPARAM lParam)
 	{
 	case NET_CMD_NA:
 		m_workModeStr = "N\\A";
+		EnableStartLog(FALSE);
+		EnablePauseLog(FALSE);
 		break;
 	case RtcSYS_DEACTIVE_CMD:
 		m_workModeStr = "DEACTIVE";
 		break;
 	case RtcSYS_IDLE_CMD:
+		EnableStartLog(FALSE);
+		EnablePauseLog(FALSE);
 		m_workModeStr = "IDLE";
 		break;
 	case RtcSYS_STANDBY_CMD:
@@ -356,6 +367,8 @@ VOID CELISTestServerDlg::OnWorkModeUpdated(WPARAM wParam, LPARAM lParam)
 		m_workModeStr = "RECSTOP";
 		break;
 	case RtcSYS_CALIBSTART_CMD:
+		EnableStartLog(FALSE);
+		EnablePauseLog(FALSE);
 		m_workModeStr = "CALIBSTART";
 		break;
 	default:
@@ -524,6 +537,16 @@ VOID CELISTestServerDlg::OnACTListUpdated(WPARAM wParam, LPARAM lParam)
 		m_cmdHandlerThread->PostThreadMessage(WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
 	} */
 	
+}
+VOID CELISTestServerDlg::OnStartLogEnabled(WPARAM wParam, LPARAM lParam)
+{
+	m_isStartLogEnabled = (BOOL)lParam;
+	EnableStartLog(m_isStartLogEnabled);
+}
+VOID CELISTestServerDlg::OnPauseLogEnabled(WPARAM wParam, LPARAM lParam)
+{
+	m_isPauseLogEnabled = (BOOL)lParam;
+	EnablePauseLog(m_isPauseLogEnabled);
 }
 void CELISTestServerDlg::ReadConfigFile()
 {
@@ -854,30 +877,41 @@ void CELISTestServerDlg::OnRadioMetric()
 	
 }
 
-void CELISTestServerDlg::OnButtonCreateLog() 
+void CELISTestServerDlg::OnButtonStartLog() 
 {
 	// TODO: Add your control notification handler code here
-	
 	if (m_speedPM != 0.0)
 	{
-		if(m_workMode == RtcSYS_STANDBY_CMD) {
-			
-			EnableStopLog(TRUE);
-			EnableCreateLog(FALSE);
-			EnableActRootFolderSelection(FALSE);
+		/*
+		if(m_workMode == RtcSYS_STANDBY_CMD) 
+		{	
+			EnableStartLog(FALSE);
+			EnablePauseLog(TRUE);
+			EnableACTRootFolderSelection(FALSE);
 			
 		} 
 		else if (m_workMode == RtcSYS_RECSTART_CMD)
 		{
-			
-			EnableStopLog(TRUE);
-			EnableCreateLog(FALSE);
-			EnableActRootFolderSelection(FALSE);
-			
-			
+			EnableStartLog(FALSE);
+			EnablePauseLog(TRUE);
+			EnableACTRootFolderSelection(FALSE);
 		} 
 		else
 		{
+			AfxMessageBox(_T("当前状态应为STANDBY或RECSTART!"));
+		}
+		*/
+		switch (m_workMode)
+		{
+		case RtcSYS_RECSTART_CMD:
+			
+		case RtcSYS_STANDBY_CMD:
+			EnableStartLog(FALSE);
+			EnablePauseLog(TRUE);
+			EnableACTRootFolderSelection(FALSE);
+			m_cmdHandlerThread->PostThreadMessage(WM_ENABLE_RETURN_SUBSET_DATA, NULL, (LPARAM)TRUE);
+			break;
+		default:
 			AfxMessageBox(_T("当前状态应为STANDBY或RECSTART!"));
 		}
 	} 
@@ -886,18 +920,15 @@ void CELISTestServerDlg::OnButtonCreateLog()
 		AfxMessageBox(_T("速度还未设定!"));
 	}
 	
-	
 }
 
 void CELISTestServerDlg::OnButtonPauseLog() 
 {
 	// TODO: Add your control notification handler code here
-	EnableStopLog(FALSE);
-	EnableCreateLog(TRUE);
-	EnableActRootFolderSelection(TRUE);
-	//wms->oldMode = wms->mode;
-	//EnableStartLog(FALSE);
-	//EnableUnitRadio(TRUE);
+	EnableStartLog(TRUE);
+	EnablePauseLog(FALSE);
+	EnableACTRootFolderSelection(TRUE);
+	m_cmdHandlerThread->PostThreadMessage(WM_ENABLE_RETURN_SUBSET_DATA, NULL, (LPARAM)FALSE);
 }
 
 
