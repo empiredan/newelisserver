@@ -245,6 +245,7 @@ typedef BYTE BUF_TYPE;
 #define RtcSYS_CALIBSTART_CMD		((UINT32)0x06000000)		/*calib start, enter CALIB mode*/
 #define RtcSYS_CALIBSTOP_CMD		((UINT32)0x06100000)		/*calib stop, exit CALIB mode to STANDBY*/
 
+#define RtcSYS_SAME_STANDBY_CMD			((UINT32)0x03100000)
 
 /*set channel gain commands. lower 8bit contains the gain*/
 #define RtcSYS_SETM2GAIN_CMD		((UINT32)0x10000000)		/*set M2 channel gain*/

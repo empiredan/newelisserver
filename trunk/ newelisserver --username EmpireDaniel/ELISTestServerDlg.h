@@ -24,19 +24,20 @@
 // CELISTestServerDlg dialog
 #define FLOAT_TO_STRING_FORMAT "%10.2f"
 
-#define WM_WORKMODE WM_USER+20
-#define WM_DIRECTION WM_USER+21
-#define WM_DEPTH WM_USER+22
-#define WM_SPEED WM_USER+23
-#define WM_TIME WM_USER+24
-#define WM_SERVER_IP_PORT WM_USER+25
+#define WM_WORKMODE WM_USER+21
+#define WM_DIRECTION WM_USER+22
+#define WM_DEPTH WM_USER+23
+#define WM_SPEED WM_USER+24
+#define WM_TIME WM_USER+25
+#define WM_SERVER_IP_PORT WM_USER+26
 //#define WM_SERVER_IP WM_USER+25
 //#define WM_SERVER_PORT WM_USER+26
-#define WM_CLIENT_IP_PORT WM_USER+26
+#define WM_CLIENT_IP_PORT WM_USER+27
 //#define WM_CLIENT_IP WM_USER+27
 //#define WM_CLIENT_PORT WM_USER+28
-#define WM_ACT_LIST WM_USER+27
-
+#define WM_ACT_LIST WM_USER+28
+#define WM_ENABLE_START_LOG WM_USER+29
+#define WM_ENABLE_PAUSE_LOG WM_USER+30
 
 
 class CELISTestServerDlg : public CDialog
@@ -91,6 +92,9 @@ public:
 	float m_timeS; // second
 	
 	int m_measure;
+
+	BOOL m_isStartLogEnabled;
+	BOOL m_isPauseLogEnabled;
 
 	/**
 	* ACT list
@@ -170,9 +174,10 @@ public:
 
 // Operations
 public:
-	void EnableActRootFolderSelection(BOOL enableButton);
-	void EnableCreateLog(BOOL enableButton);
-	void EnableStopLog(BOOL enableButton);
+	void EnableACTRootFolderSelection(BOOL enableButton);
+	void EnableCALVERRootFolderSelection(BOOL enableButton);
+	void EnableStartLog(BOOL enableButton);
+	void EnablePauseLog(BOOL enableButton);
 	void SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	void SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	void SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType);
@@ -199,7 +204,7 @@ protected:
 	afx_msg void OnButtonDataBufferSize();
 	afx_msg void OnRadioImperial();
 	afx_msg void OnRadioMetric();
-	afx_msg void OnButtonCreateLog();
+	afx_msg void OnButtonStartLog();
 	afx_msg void OnButtonPauseLog();
 
 	afx_msg VOID OnWorkModeUpdated(WPARAM wParam, LPARAM lParam);
@@ -213,6 +218,8 @@ protected:
 	afx_msg VOID OnShowClientIPAndPort(WPARAM wParam, LPARAM lParam);
 	//afx_msg VOID OnShowClientPort(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnACTListUpdated(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnStartLogEnabled(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnPauseLogEnabled(WPARAM wParam, LPARAM lParam);
 
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

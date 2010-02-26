@@ -15,16 +15,18 @@
 //#include "MessageReceiverThread.h"
 //#include "MessageSenderThread.h"
 
-#define WM_SOCKET_THREAD_ID WM_USER+1
-#define WM_COMMAND_DATA WM_USER+2
-#define WM_DATABUF_LEN WM_USER+3
-#define WM_ACT_DATAFILE_ROOT_PATH WM_USER+4
-#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+5
-#define WM_ACT_DATAFILE_PATH WM_USER+6
-#define WM_CALVER_DATAFILE_PATH WM_USER+7
-#define WM_SET_DEPTH_DATA_TIMER WM_USER+8
-#define WM_SUBSET_DATA_TIMER WM_USER+9
-#define WM_DEPTH_DATA_TIMER WM_USER+10
+#define WM_SOCKET_THREAD_ID WM_USER+51
+#define WM_COMMAND_DATA WM_USER+52
+#define WM_DATABUF_LEN WM_USER+53
+#define WM_ACT_DATAFILE_ROOT_PATH WM_USER+54
+#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+55
+#define WM_ACT_DATAFILE_PATH WM_USER+56
+#define WM_CALVER_DATAFILE_PATH WM_USER+57
+#define WM_SET_DEPTH_DATA_TIMER WM_USER+58
+#define WM_SUBSET_DATA_TIMER WM_USER+59
+#define WM_DEPTH_DATA_TIMER WM_USER+60
+#define WM_ENABLE_RETURN_SUBSET_DATA WM_USER+61
+//#define WM_PAUSE_RETURN_SUBSET_DATA WM_USER+62
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread thread
 
@@ -77,6 +79,7 @@ private:
 	long m_depthDU;
 //	long m_trueDepthDU = 0;
 //	long m_correctedDepthDU = 0;
+	BOOL m_isReturnSubsetDataEnabled;
 
 	//Timer
 	UINT m_subsetDataTimerIdentifier;
@@ -95,7 +98,7 @@ private:
 	
 // Operations
 public:
-	void Init();
+	//void Init();
 	//static VOID CALLBACK TimerProcWrapper(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	static VOID CALLBACK TimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
 	//VOID SubsetDataTimerProc();
@@ -105,6 +108,7 @@ public:
 		m_socketThreadID = tid;
 	}*/
 	inline void PreProcessMasterData(CMasterData *md);
+	inline void ResetCurrentTiming();
 	void WorkModeProc();
 	void NetCmd_InitServiceTable();
 	void NetCmd_CalibPara();
@@ -167,6 +171,9 @@ protected:
 	afx_msg VOID OnDepthDataTimerSetted(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnSubsetDataTimer(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnDepthDataTimer(WPARAM wParam, LPARAM lParam);
+
+	afx_msg VOID OnReturnSubsetDataEnabled(WPARAM wParam, LPARAM lParam);
+	//afx_msg VOID OnPauseReturnSubsetData(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 	
 
