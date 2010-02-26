@@ -96,6 +96,6 @@ VOID CSocketThread::OnPort(WPARAM wParam, LPARAM lParam)
 VOID CSocketThread::OnSend(WPARAM wParam, LPARAM lParam)
 {
 	CFrontData * frontData = (CFrontData *)lParam;
-	m_listenSocket.GetConnectSocket()->Send(frontData->GetTotalBuf(), frontData->GetTotalLen(), 0);
+	m_listenSocket.GetConnectSocket()->Send(frontData->GetTotalBuf(), frontData->GetTotalLen());
 	delete frontData;
 }

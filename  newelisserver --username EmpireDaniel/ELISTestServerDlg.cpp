@@ -538,13 +538,17 @@ void CELISTestServerDlg::ReadConfigFile()
 	INT nDefault;
 	_TCHAR confBuf[1024];
 	
+	nDefault = 1;
 	m_measure = GetPrivateProfileInt("Parameter Setting", "Measure", nDefault, dataConfigFilePath);
 	
+	nDefault = 6050;
 	m_serverPort = GetPrivateProfileInt("Net Connection", "Port", nDefault, dataConfigFilePath);
 	
+	lpDefault = "D:\\Log\\LogData\\¿Ì¶ÈÊý¾Ý";
 	GetPrivateProfileString("Data File", "ACTRoot", lpDefault, confBuf, 1024, dataConfigFilePath);
 	m_actDataFileRootPath = confBuf;
 	
+	lpDefault = "D:\\Log\\LogData\\E115";
 	GetPrivateProfileString("Data File", "CALVERRoot", lpDefault, confBuf, 1024, dataConfigFilePath);
 	m_calverDataFileRootPath = confBuf;
 	

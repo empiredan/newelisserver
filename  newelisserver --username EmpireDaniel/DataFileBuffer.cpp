@@ -53,7 +53,7 @@ void CDataFileBuffer::Init(SubsetData * sData)
 	{
 		m_blocks[i].subsetData = sData[i];
 		
-		m_blocks[i].blockLen = (m_bufferLen*m_blocks[i].subsetData.percentateOfDataFileBuf	\
+		m_blocks[i].blockLen = ((ULONG)(m_bufferLen*m_blocks[i].subsetData.percentateOfDataFileBuf)	\
 		/m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset)*m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset;
 
 		m_blocks[i].headOfBlock = curPosOfBuf;
@@ -199,9 +199,9 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 		
 		for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
 		{
-			memcpy(pBlock, (BUF_TYPE *)(&m_blocks[i].subsetData.status), statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)&m_blocks[i].subsetData.status, statusTypeLen);
 			pBlock+= statusTypeLen;
-			memcpy(pBlock, (BUF_TYPE *)(&m_blocks[i].subsetData.time), statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)&m_blocks[i].subsetData.time, statusTypeLen);
 			pBlock+= statusTypeLen;
 			BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].subsetData.rtcBlockDataHeader.dataSize-2*statusTypeLen);
 			for ( ; pBlock < subsetEnd; pBlock++)
@@ -216,9 +216,9 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 		
 		for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
 		{
-			memcpy(pBlock, (BUF_TYPE *)(&m_blocks[i].calibData.status), statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)&m_blocks[i].calibData.status, statusTypeLen);
 			pBlock+= statusTypeLen;
-			memcpy(pBlock, (BUF_TYPE *)(&m_blocks[i].calibData.time), statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)&m_blocks[i].calibData.time, statusTypeLen);
 			pBlock+= statusTypeLen;
 			/*
 			BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].calibData-2*statusTypeLen);

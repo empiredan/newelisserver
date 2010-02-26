@@ -56,14 +56,21 @@ public:
 		memcpy(m_pBuf, &((BUF_TYPE)cmdType), sizeof(ULONG));
 		m_pBuf+= sizeof(ULONG);
 		*/
-		ULONG * head = (ULONG *)m_pBuf;
-		head[0] = cmdType;
-		head[1] = m_totalLen;
-		m_pBuf+= headLen;
+		ASSERT(m_pBuf < m_totalBuf+m_totalLen);
+		if (m_pBuf < m_totalBuf+m_totalLen){
+			ULONG * head = (ULONG *)m_pBuf;
+			head[0] = cmdType;
+			head[1] = m_totalLen;
+			m_pBuf+= headLen;
+		}
 	}
 	inline void SetBodyOfBuf(BUF_TYPE * sectionBuf, ULONG sectionLen){
-		memcpy(m_pBuf, sectionBuf, sectionLen);
-		m_pBuf+= sectionLen;
+		ASSERT(m_pBuf < m_totalBuf+m_totalLen);
+		if (m_pBuf < m_totalBuf+m_totalLen)
+		{
+			memcpy(m_pBuf, sectionBuf, sectionLen);
+			m_pBuf+= sectionLen;
+		}
 	}
 	inline BUF_TYPE * GetTotalBuf() {
 		return m_totalBuf;
