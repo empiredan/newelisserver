@@ -102,9 +102,11 @@ BEGIN_MESSAGE_MAP(CCommandHandlerThread, CWinThread)
 	//ON_THREAD_MESSAGE(WM_TIMER, OnTimerProc)
 	ON_THREAD_MESSAGE(WM_DATABUF_LEN, OnDataBufLen)
 	ON_THREAD_MESSAGE(WM_ACT_DATAFILE_ROOT_PATH, OnACTDataFileRootPath)
+	ON_THREAD_MESSAGE(WM_CALVER_DATAFILE_ROOT_PATH, OnCALVERDataFileRootPath)
 	ON_THREAD_MESSAGE(WM_ALL_ACT_DATAFILE_PATHS, OnAllACTDataFilePaths)
 	ON_THREAD_MESSAGE(WM_ACT_DATAFILE_PATH, OnACTDataFilePath)
 	ON_THREAD_MESSAGE(WM_CALVER_DATAFILE_PATH, OnCALVERDataFilePath)
+
 	ON_THREAD_MESSAGE(WM_SET_DEPTH_DATA_TIMER, OnDepthDataTimerSetted)
 	ON_THREAD_MESSAGE(WM_SUBSET_DATA_TIMER, OnSubsetDataTimer)
 	ON_THREAD_MESSAGE(WM_DEPTH_DATA_TIMER, OnDepthDataTimer)
@@ -319,7 +321,7 @@ void CCommandHandlerThread::WorkModeProc()
 			**/
 			m_cDataFileBuffer.Init(m_cACTList.GetSubsetData());
 			CELISTestServerDlg::m_accessDataFileMutex.Lock();
-			m_cDataFileBuffer.SetDataFilePathOfAllBlocks(m_actDataFileRootPath);
+			m_cDataFileBuffer.SetDataFilePathByRootPath(m_actDataFileRootPath);
 			m_cDataFileBuffer.WriteAllBlocks();
 			CELISTestServerDlg::m_accessDataFileMutex.Unlock();
 			
@@ -360,6 +362,10 @@ VOID CCommandHandlerThread::OnDataBufLen(WPARAM wParam, LPARAM lParam)
 VOID CCommandHandlerThread::OnACTDataFileRootPath(WPARAM wParam, LPARAM lParam)
 {
 	m_actDataFileRootPath = *((CString *)lParam);
+}
+VOID CCommandHandlerThread::OnCALVERDataFileRootPath(WPARAM wParam, LPARAM lParam)
+{
+	m_calverDataFileRootPath = *((CString *)lParam);
 }
 VOID CCommandHandlerThread::OnAllACTDataFilePaths(WPARAM wParam, LPARAM lParam)
 {
@@ -409,6 +415,7 @@ VOID CCommandHandlerThread::OnReturnSubsetDataEnabled(WPARAM wParam, LPARAM lPar
 			break;
 
 		default:
+			break;
 		}
 	} 
 	else
@@ -424,6 +431,7 @@ VOID CCommandHandlerThread::OnReturnSubsetDataEnabled(WPARAM wParam, LPARAM lPar
 			::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
 			break;
 		default:
+			break;
 		}
 		
 	}
@@ -586,7 +594,8 @@ inline void CCommandHandlerThread::PreProcessMasterData(CMasterData *md)
 	m_bodyLen = md->GetBodyLen();
 }
 
-void CCommandHandlerThread::NetCmd_InitServiceTable() {
+void CCommandHandlerThread::NetCmd_InitServiceTable() 
+{
 	
 	m_cACTList.Init(m_bodyBuf, m_bodyLen);
 	m_cDataFileBuffer.SetNumOfBlocks(m_cACTList.GetACTNum());
@@ -602,19 +611,29 @@ void CCommandHandlerThread::NetCmd_InitServiceTable() {
 	*/
 }
 
-void CCommandHandlerThread::NetCmd_CalibPara() {
+void CCommandHandlerThread::NetCmd_CalibPara() 
+{
+	m_cCalib.Init(m_bodyBuf, m_bodyLen, m_cACTList.GetACTList());
+	m_cDataFileBuffer.Init(m_cCalib.GetCalibData());
+	m_cDataFileBuffer.SetDataFilePathByRootPath(m_calverDataFileRootPath);
+	m_cDataFileBuffer.WriteBlock(m_cCalib.GetBlockNo());
+	//Send the "show calib parameter" message to Dialog
 	
 
+	
 	/*
-	CCalibParameter *ccp = new CCalibParameter(bodyBuf, bodyLen);
-	dlg->SetCalibParameter(ccp);
+	char logdata[1024];
+	sprintf(logdata, "CCommandHandler::NetCmd_CalibPara\n");
+	dlg->log.Write(logdata, strlen(logdata));
+	dlg->log.Flush();
 	*/
-	//char logdata[1024];
-	//sprintf(logdata, "CCommandHandler::NetCmd_CalibPara\n");
-	//dlg->log.Write(logdata, strlen(logdata));
-	//dlg->log.Flush();
 }
-void CCommandHandlerThread::NetCmd_CalibStart() {
+void CCommandHandlerThread::NetCmd_CalibStart() 
+{
+	CFrontData * fData = new CFrontData(m_cCalib.GetTotalCalibDataLen());
+	fData->SetHeadOfBuf(NET_RETURN_SNGLACQ_DATAREADY, m_headLen);
+	fData->SetBodyOfBuf((BUF_TYPE *)m_cDataFileBuffer.GetCurrentPositionOfBlock(m_cCalib.GetBlockNo()), m_cCalib.GetSubsetLen());
+	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 	
 /*
 	CCalibSubset *rtn = NULL;
@@ -863,6 +882,7 @@ void CCommandHandlerThread::NetCmd_DepthSpeed() {
 			//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProcWrapper);
 			break;
 		default:
+			break;
 		}
 	}
 	

@@ -19,13 +19,14 @@
 #define WM_COMMAND_DATA WM_USER+52
 #define WM_DATABUF_LEN WM_USER+53
 #define WM_ACT_DATAFILE_ROOT_PATH WM_USER+54
-#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+55
-#define WM_ACT_DATAFILE_PATH WM_USER+56
-#define WM_CALVER_DATAFILE_PATH WM_USER+57
-#define WM_SET_DEPTH_DATA_TIMER WM_USER+58
-#define WM_SUBSET_DATA_TIMER WM_USER+59
-#define WM_DEPTH_DATA_TIMER WM_USER+60
-#define WM_ENABLE_RETURN_SUBSET_DATA WM_USER+61
+#define WM_CALVER_DATAFILE_ROOT_PATH WM_USER+55
+#define WM_ALL_ACT_DATAFILE_PATHS WM_USER+56
+#define WM_ACT_DATAFILE_PATH WM_USER+57
+#define WM_CALVER_DATAFILE_PATH WM_USER+58
+#define WM_SET_DEPTH_DATA_TIMER WM_USER+59
+#define WM_SUBSET_DATA_TIMER WM_USER+60
+#define WM_DEPTH_DATA_TIMER WM_USER+61
+#define WM_ENABLE_RETURN_SUBSET_DATA WM_USER+62
 //#define WM_PAUSE_RETURN_SUBSET_DATA WM_USER+62
 /////////////////////////////////////////////////////////////////////////////
 // CCommandHandlerThread thread
@@ -66,11 +67,13 @@ private:
 
 	ULONG m_bufferLen;
 	CString m_actDataFileRootPath;
+	CString m_calverDataFileRootPath;
 
 	CACTList m_cACTList;
 	DPM_DISPLAY_PARA m_dpmDisplayPara;
 	CWorkMode m_cWorkMode;
 	CDataFileBuffer m_cDataFileBuffer;
+	CCalib m_cCalib;
 	//BOOL m_writeAllBlocksEnabled;
 
 	long m_timeMS;
