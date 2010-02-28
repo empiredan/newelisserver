@@ -62,7 +62,7 @@ private:
 public:
 	void Init(BUF_TYPE * bodyBuf, ULONG bodyLen, ACTList * actList);
 	inline ULONG GetBlockNo(){return m_calibData.blockNo;}
-	inline CalibData GetCalibData(){return m_calibData;}
+	inline CalibData * GetCalibData(){return &m_calibData;}
 	inline ULONG GetTotalCalibDataLen(){return m_totalReturnedCalibDataLen;}
 	inline ULONG GetSubsetLen(){return m_calibData.subsetLen;}
 	inline int SetSubsetLen(){

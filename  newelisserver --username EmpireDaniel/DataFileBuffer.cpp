@@ -72,11 +72,11 @@ void CDataFileBuffer::Init(SubsetData * sData)
 	}
 }
 
-void CDataFileBuffer::Init(CalibData &cData)
+void CDataFileBuffer::Init(CalibData * cData)
 {
 	m_mode = 1;
 
-	m_calibData = cData;
+	m_calibData = *cData;
 
 	ULONG i = m_calibData.blockNo;
 
@@ -232,13 +232,12 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 			pBlock+= statusTypeLen;
 			memcpy(pBlock, (BUF_TYPE *)&m_calibData.time, statusTypeLen);
 			pBlock+= statusTypeLen;
-			/*
-			BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].calibData-2*statusTypeLen);
+			BUF_TYPE * subsetEnd = pBlock+(m_calibData.subsetLen-2*statusTypeLen);
 			for ( ; pBlock < subsetEnd; pBlock++)
 			{
 				memset(pBlock, rand()%256, 1);
 			}
-			*/
+		
 		}
 	}
 	
@@ -247,11 +246,11 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 
 void CDataFileBuffer::SetDataFilePathByRootPath(CString rootPath)
 {
-	m_actDataFileRootPath = rootPath;
 	CFileFind dataFileFind;
 	BOOL isRootPathFinded;
 	if (!m_mode)
 	{
+		m_actDataFileRootPath = rootPath;
 		isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
 		if (isRootPathFinded)
 		{
@@ -287,10 +286,11 @@ void CDataFileBuffer::SetDataFilePathByRootPath(CString rootPath)
 	} 
 	else
 	{
-		isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+		m_calverDataFileRootPath = rootPath;
+		isRootPathFinded = dataFileFind.FindFile(m_calverDataFileRootPath+"\\*.dat");
 		if (isRootPathFinded)
 		{
-			BOOL isDataFilePathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+			BOOL isDataFilePathFinded = dataFileFind.FindFile(m_calverDataFileRootPath+"\\*.dat");
 			while(isDataFilePathFinded)
 			{
 				isDataFilePathFinded = dataFileFind.FindNextFile();
@@ -311,7 +311,7 @@ void CDataFileBuffer::SetDataFilePathByRootPath(CString rootPath)
 					&& subsetNo == (UINT32)m_calibData.rtcSubset.subsetNo
 					&& dataFileType == 1)
 				{
-					m_blocks[i].subsetDataFilePath = dataFilePath;
+					m_calibDataFilePath = dataFilePath;
 					break;
 				}//if
 			}//while
