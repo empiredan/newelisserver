@@ -116,7 +116,7 @@ public:
 	void NetCmd_InitServiceTable();
 	void NetCmd_CalibPara();
 	void NetCmd_CalibStart();
-	//void NetCmd_CalibStop();
+	void NetCmd_CalibStop();
 	void NetCmd_CtrlWorkState();
 	//void NetCmd_SetStandbyTimeInterval();
 	//void NetCmd_CtrlRecStop();
