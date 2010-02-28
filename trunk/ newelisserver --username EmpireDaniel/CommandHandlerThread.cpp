@@ -284,8 +284,10 @@ void CCommandHandlerThread::WorkModeProc()
 	case RtcSYS_IDLE_CMD:
 		break;
 	case RtcSYS_CALIBSTART_CMD:
+		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
 		break;
 	case RtcSYS_TRAINSTART_CMD:
+		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
 		break;
 	case RtcSYS_RECSTART_CMD:
 		m_cACTList.SetDepthDuDeltaWithDirection(m_cWorkMode.GetDirection());
@@ -303,7 +305,7 @@ void CCommandHandlerThread::WorkModeProc()
 			/**
 			* Try to kill the SUBSET DATA TIMER if exists
 			**/
-			//if (m_cWorkMode.GetOldWorkMode() != NET_CMD_NA)
+			//if (m_cWorkMode.GetOldWorkMode() != RtcSYS_NA_CMD)
 			::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
 			//::KillTimer(NULL, m_subsetDataTimerIdentifier);
 
@@ -330,7 +332,7 @@ void CCommandHandlerThread::WorkModeProc()
 			* STANDBY TIME) and create log timer 
 			* so that the subset data can be returned to ELIS client
 			**/
-			if (m_cWorkMode.GetOldWorkMode() == NET_CMD_NA)
+			if (m_cWorkMode.GetOldWorkMode() == RtcSYS_NA_CMD)
 			{
 				m_isReturnSubsetDataEnabled = TRUE;
 			}
@@ -620,7 +622,7 @@ void CCommandHandlerThread::NetCmd_CalibPara()
 	m_cDataFileBuffer.WriteBlock(m_cCalib.GetBlockNo());
 	CELISTestServerDlg::m_accessDataFileMutex.Unlock();
 	//Send the "show calib parameter" message to Dialog
-	
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_CALVER_LIST, NULL, (LPARAM)m_cCalib.GetCalibData());
 
 	
 	/*
@@ -635,6 +637,7 @@ void CCommandHandlerThread::NetCmd_CalibStart()
 	CFrontData * fData = new CFrontData(m_cCalib.GetTotalCalibDataLen());
 	fData->SetHeadOfBuf(NET_RETURN_SNGLACQ_DATAREADY, m_headLen);
 	fData->SetBodyOfBuf((BUF_TYPE *)m_cDataFileBuffer.GetCurrentPositionOfBlock(m_cCalib.GetBlockNo()), m_cCalib.GetSubsetLen());
+	m_cDataFileBuffer.NextPositionOfBlock(m_cCalib.GetBlockNo());
 	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 	
 	/*
@@ -644,8 +647,10 @@ void CCommandHandlerThread::NetCmd_CalibStart()
 	//dlg->log.Flush();
 	*/ 
 }
-void CCommandHandlerThread::NetCmd_CalibStop() {
-	m_cDataFileBuffer.ResetBlock(m_cCalib.GetBlockNo());
+void CCommandHandlerThread::NetCmd_CalibStop() 
+{
+	m_cDataFileBuffer.SetMode(0);
+	//m_cDataFileBuffer.ResetBlock(m_cCalib.GetBlockNo());
 	/*
 	char logdata[1024];
 	sprintf(logdata, "Implement me!! CCommandHandler::NetCmd_CalibStop\n");

@@ -185,8 +185,10 @@ void CELISTestServerDlg::EnableCALVERRootFolderSelection(BOOL enableButton)
 void CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	CFileFind dataFileFind;
-	BOOL isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
-	
+	CString dataFileRootPath;
+	(void)( dataFileType ? (dataFileRootPath = m_calverDataFileRootPath)
+		: (dataFileRootPath = m_actDataFileRootPath) );
+	BOOL isRootPathFinded = dataFileFind.FindFile(dataFileRootPath+"\\*.dat");
 	if (isRootPathFinded)
 	{
 		BOOL isDataFilePathFinded = isRootPathFinded;
@@ -219,8 +221,7 @@ void CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT3
 			}
 		}
 	}
-	dataFileType ? (m_calverDataFilePath = "") 
-		: (m_actDataFilePath[i] = "");
+	(void)( dataFileType ? (m_calverDataFilePath = "") : (m_actDataFilePath[i] = "") );
 	dataFileFind.Close();
 	//return FALSE;
 	
@@ -331,6 +332,7 @@ BEGIN_MESSAGE_MAP(CELISTestServerDlg, CDialog)
 	//ON_MESSAGE(WM_CLIENT_IP, OnShowClientIP)
 	//ON_MESSAGE(WM_CLIENT_PORT, OnShowClientPort)
 	ON_MESSAGE(WM_ACT_LIST, OnACTListUpdated)
+	ON_MESSAGE(WM_CALVER_LIST, OnCALVERListUpdated)
 	ON_MESSAGE(WM_ENABLE_START_LOG, OnStartLogEnabled)
 	ON_MESSAGE(WM_ENABLE_PAUSE_LOG, OnPauseLogEnabled)
 	//}}AFX_MSG_MAP
@@ -344,14 +346,6 @@ VOID CELISTestServerDlg::OnWorkModeUpdated(WPARAM wParam, LPARAM lParam)
 	//CString str;
 	switch (m_workMode)
 	{
-	case NET_CMD_NA:
-		m_workModeStr = "N\\A";
-		EnableStartLog(FALSE);
-		EnablePauseLog(FALSE);
-		break;
-	case RtcSYS_DEACTIVE_CMD:
-		m_workModeStr = "DEACTIVE";
-		break;
 	case RtcSYS_IDLE_CMD:
 		EnableStartLog(FALSE);
 		EnablePauseLog(FALSE);
@@ -363,8 +357,8 @@ VOID CELISTestServerDlg::OnWorkModeUpdated(WPARAM wParam, LPARAM lParam)
 	case RtcSYS_RECSTART_CMD:
 		m_workModeStr = "RECSTART";
 		break;
-	case RtcSYS_RECSTOP_CMD:
-		m_workModeStr = "RECSTOP";
+	case RtcSYS_TRAINSTART_CMD:
+		m_workModeStr = "TRAINSTART";
 		break;
 	case RtcSYS_CALIBSTART_CMD:
 		EnableStartLog(FALSE);
@@ -372,7 +366,7 @@ VOID CELISTestServerDlg::OnWorkModeUpdated(WPARAM wParam, LPARAM lParam)
 		m_workModeStr = "CALIBSTART";
 		break;
 	default:
-		m_workModeStr = "WRONG WORK MODE";
+		m_workModeStr = "UNDEFINED WORK MODE";
 		break;
 	}
 	GetDlgItem(IDC_STATIC_WORKMODE_VALUE)->SetWindowText(m_workModeStr);
@@ -537,6 +531,27 @@ VOID CELISTestServerDlg::OnACTListUpdated(WPARAM wParam, LPARAM lParam)
 		m_cmdHandlerThread->PostThreadMessage(WM_ALL_ACT_DATAFILE_PATHS, NULL, (LPARAM)m_actDataFilePath);
 	} */
 	
+}
+VOID CELISTestServerDlg::OnCALVERListUpdated(WPARAM wParam, LPARAM lParam)
+{
+	m_calibData = (CalibData *)lParam;
+	m_myTabCtrl.m_calverDialog->m_calverListCtrl.DeleteAllItems();
+
+	char str[256];
+
+	itoa(m_calibData->rtcSubset.actNo, str, 10);
+	m_myTabCtrl.m_calverDialog->m_calverListCtrl.InsertItem(0, str);
+
+	itoa(m_calibData->rtcSubset.toolAddress, str, 10);
+	m_myTabCtrl.m_calverDialog->m_calverListCtrl.SetItemText(0, 1, str);
+
+	itoa(m_calibData->rtcSubset.subsetNo, str, 10);
+	m_myTabCtrl.m_calverDialog->m_calverListCtrl.SetItemText(0, 2, str);
+
+	CELISTestServerDlg::m_accessDataFileMutex.Lock();
+	SetDataFilePath(m_calibData->blockNo, m_myTabCtrl.m_calverDialog->m_calverListCtrl, 1);
+	CELISTestServerDlg::m_accessDataFileMutex.Unlock();
+
 }
 VOID CELISTestServerDlg::OnStartLogEnabled(WPARAM wParam, LPARAM lParam)
 {

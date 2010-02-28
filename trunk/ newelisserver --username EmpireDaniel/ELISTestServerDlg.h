@@ -15,6 +15,7 @@
 //#include "CalibParameter.h"
 //#include "CalibSubset.h"
 #include "ACTList.h"
+#include "Calib.h"
 #include "CommandHandlerThread.h"
 #include "SocketThread.h"
 #include "MyTabCtrl.h"
@@ -36,8 +37,9 @@
 //#define WM_CLIENT_IP WM_USER+27
 //#define WM_CLIENT_PORT WM_USER+28
 #define WM_ACT_LIST WM_USER+28
-#define WM_ENABLE_START_LOG WM_USER+29
-#define WM_ENABLE_PAUSE_LOG WM_USER+30
+#define WM_CALVER_LIST WM_USER+29
+#define WM_ENABLE_START_LOG WM_USER+30
+#define WM_ENABLE_PAUSE_LOG WM_USER+31
 
 
 class CELISTestServerDlg : public CDialog
@@ -101,7 +103,10 @@ public:
 	*/
 	ACTList * m_actList;
 
-
+	/**
+	* CAL/VER list
+	*/
+	CalibData * m_calibData;
 
 	/**
 	* Thread objects inheriting from CWinThread  
@@ -218,6 +223,7 @@ protected:
 	afx_msg VOID OnShowClientIPAndPort(WPARAM wParam, LPARAM lParam);
 	//afx_msg VOID OnShowClientPort(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnACTListUpdated(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnCALVERListUpdated(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnStartLogEnabled(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnPauseLogEnabled(WPARAM wParam, LPARAM lParam);
 

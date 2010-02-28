@@ -19,6 +19,8 @@ static char THIS_FILE[]=__FILE__;
 CWorkMode::CWorkMode()
 {
 	m_totalReturnedWorkModeDataLen = 2*sizeof(ULONG)+2*sizeof(UINT32);
+	m_workMode = RtcSYS_NA_CMD;
+	//m_oldWorkMode = RtcSYS_NA_CMD;
 }
 
 CWorkMode::~CWorkMode()

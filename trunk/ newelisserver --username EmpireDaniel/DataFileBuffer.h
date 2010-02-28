@@ -110,7 +110,7 @@ public:
 		
 		m_blocks[i].curPosOfDataFile = m_dataFileHeadLen;
 	}
-	void Init(CalibData &cData);
+	void Init(CalibData * cData);
 	inline BUF_TYPE * GetCurrentPositionOfBlock(ULONG i){
 		return m_blocks[i].curPosOfBlock;
 	}
@@ -118,15 +118,18 @@ public:
 		if (!m_mode)
 		{
 			m_blocks[i].curPosOfBlock+= m_blocks[i].subsetData.allSubsetsLenOfOneToolSubset;
-			if (m_blocks[i].curPosOfBlock >= m_blocks[i].headOfBlock+m_blocks[i].realUsedBlockLen)
-			{
-				WriteBlock(i);
-				m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
-			}
-		} 
-		/*else
+			
+		}
+		else
 		{
-		}*/
+			m_blocks[i].curPosOfBlock+= m_calibData.subsetLen;
+		}
+
+		if (m_blocks[i].curPosOfBlock >= m_blocks[i].headOfBlock+m_blocks[i].realUsedBlockLen)
+		{
+			WriteBlock(i);
+			m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
+		}
 		
 	}
 	void WriteAllBlocks();

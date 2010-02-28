@@ -229,7 +229,7 @@ typedef BYTE BUF_TYPE;
 #define MODE_TRAIN				((ULONG)5)
 #define MODE_DULOAD				((ULONG)6)
 
-
+#define RtcSYS_NA_CMD				((UINT32)0x00000000)
 #define RtcSYS_DEACTIVE_CMD			((UINT32)0x01000000)		/*system DEACTIVE*/
 #define RtcSYS_IDLE_CMD				((UINT32)0x02000000)		/*system idle*/
 /*the subset commands must be loaded into  before asserting this cmd*/
