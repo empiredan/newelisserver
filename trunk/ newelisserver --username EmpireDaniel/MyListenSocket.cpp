@@ -42,7 +42,7 @@ void CMyListenSocket::OnAccept(int nErrorCode)
 {
 	// TODO: Add your specialized code here and/or call the base class
 	if(nErrorCode == 0){
-		
+		m_connectSocket.Close();
 		if(!this->Accept(m_connectSocket)){
 			char t[50];
 			int e = GetLastError();
@@ -69,6 +69,6 @@ void CMyListenSocket::OnAccept(int nErrorCode)
 void CMyListenSocket::OnClose(int nErrorCode) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	
+	m_connectSocket.Close();
 	CAsyncSocket::OnClose(nErrorCode);
 }

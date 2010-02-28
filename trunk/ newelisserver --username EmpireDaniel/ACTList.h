@@ -161,6 +161,7 @@ private:
 
 	long m_depthDUDeltaOfDepthMode;
 	long m_depthDUDeltaOfTimeMode;
+	int m_directionOfDepthMode;
 
 	UINT32 m_workMode;
 	
@@ -210,10 +211,14 @@ public:
 		m_depthDUDeltaOfTimeMode = (m_timeMSDeltaOfTimeMode*speedDUPS)/1000;
 	}
 	inline void SetDepthDuDeltaWithDirection(int direction){
-		if (!direction)
+		if (direction)
 		{
-			m_depthDUDeltaOfDepthMode*= -1;
+			m_directionOfDepthMode = 1;
 		} 
+		else
+		{
+			m_directionOfDepthMode = -1;
+		}
 		
 	}
 	inline int SetOneSubsetLenOfOneToolSubset(ULONG i){
@@ -269,13 +274,14 @@ public:
 		return 0;
 	}
 	inline long GetDepthDuDelta(){
-		if(m_workMode == RtcSYS_STANDBY_CMD){
+		if(m_workMode == RtcSYS_STANDBY_CMD)
+		{
 
 			return m_depthDUDeltaOfTimeMode;
 		}
 		else if(m_workMode == RtcSYS_RECSTART_CMD)
 		{
-			return m_depthDUDeltaOfDepthMode;
+			return m_depthDUDeltaOfDepthMode*m_directionOfDepthMode;
 		}
 		return 0;
 		

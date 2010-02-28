@@ -131,7 +131,7 @@ VOID CCommandHandlerThread::OnDepthDataTimerSetted(WPARAM wParam, LPARAM lParam)
 	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
 	::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);
 	//::KillTimer(NULL, m_depthDataTimerIdentifier);
-	//m_depthDataTimerIdentifier = ::SetTimer(NULL, NULL, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProcWrapper);//
+	//m_depthDataTimerIdentifier = ::SetTimer(NULL, NULL, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);//
 	
 }
 /*
@@ -285,6 +285,7 @@ void CCommandHandlerThread::WorkModeProc()
 		break;
 	case RtcSYS_CALIBSTART_CMD:
 		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
 		break;
 	case RtcSYS_TRAINSTART_CMD:
 		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
@@ -307,6 +308,7 @@ void CCommandHandlerThread::WorkModeProc()
 			**/
 			//if (m_cWorkMode.GetOldWorkMode() != RtcSYS_NA_CMD)
 			::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+			
 			//::KillTimer(NULL, m_subsetDataTimerIdentifier);
 
 			
@@ -339,7 +341,7 @@ void CCommandHandlerThread::WorkModeProc()
 			if (m_isReturnSubsetDataEnabled)
 			{
 				::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
-				//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProcWrapper);
+				//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
 				::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_START_LOG, NULL, FALSE);
 				::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_PAUSE_LOG, NULL, TRUE);
 			}
@@ -649,7 +651,7 @@ void CCommandHandlerThread::NetCmd_CalibStart()
 }
 void CCommandHandlerThread::NetCmd_CalibStop() 
 {
-	m_cDataFileBuffer.SetMode(0);
+	::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);
 	//m_cDataFileBuffer.ResetBlock(m_cCalib.GetBlockNo());
 	/*
 	char logdata[1024];
@@ -861,7 +863,7 @@ void CCommandHandlerThread::NetCmd_DepthSpeed() {
 			::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
 			//::KillTimer(NULL, m_subsetDataTimerIdentifier);
 			::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
-			//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProcWrapper);
+			//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
 			break;
 		default:
 			break;
