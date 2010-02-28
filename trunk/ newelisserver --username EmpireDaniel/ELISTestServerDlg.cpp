@@ -308,7 +308,7 @@ BEGIN_MESSAGE_MAP(CELISTestServerDlg, CDialog)
 	ON_NOTIFY(TCN_SELCHANGE, IDC_ELISTESTSERVER_TAB, OnSelchangeElistestserverTab)
 	ON_BN_CLICKED(IDC_BUTTON_ACT_FOLDER, OnButtonActFolder)
 	ON_WM_TIMER()
-	ON_BN_CLICKED(IDC_BUTTON_SERVER_PORT, OnButtonServerPort)
+	ON_BN_CLICKED(IDC_BUTTON_SERVER_PORT_CONNECTION, OnButtonServerPort)
 	ON_BN_CLICKED(IDC_BUTTON_CALVER_FOLDER, OnButtonCalverFolder)
 	ON_BN_CLICKED(IDC_BUTTON_DATA_BUFFER_SIZE, OnButtonDataBufferSize)
 	//ON_BN_CLICKED(IDC_BUTTON_SPEED, OnButtonSpeed)
@@ -636,15 +636,18 @@ BOOL CELISTestServerDlg::OnInitDialog()
 
 	m_cmdHandlerThread = AfxBeginThread(RUNTIME_CLASS(CCommandHandlerThread));
 	m_socketThread = AfxBeginThread(RUNTIME_CLASS(CSocketThread));
-	::PostThreadMessage(m_socketThread->m_nThreadID, WM_CMD_HANDLER_THREAD_ID, NULL, m_cmdHandlerThread->m_nThreadID);
-	::PostThreadMessage(m_cmdHandlerThread->m_nThreadID, WM_SOCKET_THREAD_ID, NULL, m_socketThread->m_nThreadID);
+	m_socketThread->PostThreadMessage(WM_CMD_HANDLER_THREAD_ID, NULL, m_cmdHandlerThread->m_nThreadID);
+	m_cmdHandlerThread->PostThreadMessage(WM_SOCKET_THREAD_ID, NULL, m_socketThread->m_nThreadID);
 	//((CSocketThread)m_socketThread)->SetCmdHandlerThreadID(m_cmdHandlerThread->m_nThreadID);
 	//((CCommandHandlerThread)m_cmdHandlerThread)->SetSocketThreadID(m_socketThread->m_nThreadID);
 	//((CCommandHandlerThread)m_cmdHandlerThread)->Init();
 	m_cmdHandlerThread->PostThreadMessage(WM_ACT_DATAFILE_ROOT_PATH, NULL, (LPARAM)(&m_actDataFileRootPath));
+	m_cmdHandlerThread->PostThreadMessage(WM_CALVER_DATAFILE_ROOT_PATH, NULL, (LPARAM)(&m_calverDataFileRootPath));
 	m_cmdHandlerThread->PostThreadMessage(WM_DATABUF_LEN, NULL, m_dataFileBufSize);
-
+	
 	UpdateData(FALSE);
+
+	OnButtonServerPort();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -739,7 +742,7 @@ void CELISTestServerDlg::OnButtonServerPort()
 	// TODO: Add your control notification handler code here
 
 	UpdateData(TRUE);
-	GetDlgItem(IDC_BUTTON_SERVER_PORT)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BUTTON_SERVER_PORT_CONNECTION)->EnableWindow(FALSE);
 	GetDlgItem(IDC_EDIT_SERVER_PORT)->EnableWindow(FALSE);
 	::PostThreadMessage(m_socketThread->m_nThreadID, WM_PORT, NULL, 
 	(LPARAM)m_serverPort);
