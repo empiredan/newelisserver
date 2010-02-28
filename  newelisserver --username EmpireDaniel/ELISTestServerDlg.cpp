@@ -549,7 +549,7 @@ VOID CELISTestServerDlg::OnCALVERListUpdated(WPARAM wParam, LPARAM lParam)
 	m_myTabCtrl.m_calverDialog->m_calverListCtrl.SetItemText(0, 2, str);
 
 	CELISTestServerDlg::m_accessDataFileMutex.Lock();
-	SetDataFilePath(m_calibData->blockNo, m_myTabCtrl.m_calverDialog->m_calverListCtrl, 1);
+	SetDataFilePath(0, m_myTabCtrl.m_calverDialog->m_calverListCtrl, 1);
 	CELISTestServerDlg::m_accessDataFileMutex.Unlock();
 
 }
