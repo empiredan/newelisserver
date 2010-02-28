@@ -484,7 +484,7 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case NET_CMDTYPE_CALIB_STOP:
-			//NetCmd_CalibStop();
+			NetCmd_CalibStop();
 			break;
 
 		//µ¥´Î¿ØÖÆÃüÁî
@@ -615,8 +615,10 @@ void CCommandHandlerThread::NetCmd_CalibPara()
 {
 	m_cCalib.Init(m_bodyBuf, m_bodyLen, m_cACTList.GetACTList());
 	m_cDataFileBuffer.Init(m_cCalib.GetCalibData());
+	CELISTestServerDlg::m_accessDataFileMutex.Lock();
 	m_cDataFileBuffer.SetDataFilePathByRootPath(m_calverDataFileRootPath);
 	m_cDataFileBuffer.WriteBlock(m_cCalib.GetBlockNo());
+	CELISTestServerDlg::m_accessDataFileMutex.Unlock();
 	//Send the "show calib parameter" message to Dialog
 	
 
@@ -635,48 +637,23 @@ void CCommandHandlerThread::NetCmd_CalibStart()
 	fData->SetBodyOfBuf((BUF_TYPE *)m_cDataFileBuffer.GetCurrentPositionOfBlock(m_cCalib.GetBlockNo()), m_cCalib.GetSubsetLen());
 	::PostThreadMessage(m_socketThreadID, WM_SEND, NULL, (LPARAM)fData);
 	
-/*
-	CCalibSubset *rtn = NULL;
-	rtn = new CCalibSubset();
-	//
-	rtn->setCommandHeader(calibpara, m_subsetAssister);
-	rtn->setSubsetData(calibpara, m_subsetAssister);
-	dlg->getFrontDataQueue()->enQueue(rtn);
-	//return calibsubset;
-	dlg->getCalibSubset();
-	
-	//dlg->getFrontDataQueue()->enQueue(ccss);
-
+	/*
 	//char logdata[1024];
 	//sprintf(logdata, "CCommandHandler::NetCmd_CalibStart, returned one calib subset data\n");
 	//dlg->log.Write(logdata, strlen(logdata));
 	//dlg->log.Flush();
 	*/ 
 }
-/*
 void CCommandHandlerThread::NetCmd_CalibStop() {
-	BUF_TYPE *bodyBuf;
-	ULONG bodyLen;
-
-	ULONG *head;
-	ULONG cmdType, totalLen;
-
-	head = (ULONG*)d->buf;
-	cmdType = ntohl(head[0]);
-	totalLen = ntohl(head[1]);
-
-	bodyLen = totalLen - headSize;
-	bodyBuf = d->buf + headSize;
-
-	//dlg->EnableCreateLog(TRUE);
-	//dlg->EnableStopLog(FALSE);
-
+	m_cDataFileBuffer.ResetBlock(m_cCalib.GetBlockNo());
+	/*
 	char logdata[1024];
 	sprintf(logdata, "Implement me!! CCommandHandler::NetCmd_CalibStop\n");
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
+	*/
 }
-*/
+
 void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 
 	m_cWorkMode.Init(m_bodyBuf);
