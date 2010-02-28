@@ -35,7 +35,7 @@ typedef struct{
 	SubsetData subsetData;
 	
 	//From the class CCalib
-	CalibData calibData;
+	//CalibData calibData;
 	
 	//Related to the block itself(memory)
 	ULONG blockLen;
@@ -47,7 +47,7 @@ typedef struct{
 	//Related to the file(disk) read to the block
 	//ULONG dataFileLen;
 	CString subsetDataFilePath;
-	CString calibDataFilePath;
+	//CString calibDataFilePath;
 	CFile dataFile;
 	ULONG curPosOfDataFile;
 	//ULONG statusTypeLen;
@@ -65,15 +65,20 @@ private:
 	ULONG m_bufferLen;
 	ULONG m_numOfBlocks;
 	CString m_actDataFileRootPath;
+	CString m_calverDataFileRootPath;
 	Block * m_blocks;
 	ULONG m_dataFileHeadLen;
 
+	//Calib
+	CalibData m_calibData;
+	CString m_calibDataFilePath;
+
 	//Two modes: Subset and Calib
-	ULONG m_mode;//0: Subset,   1:Calib
+	UINT32 m_mode;//0: Subset,   1:Calib
 
 //Operations
 public:
-	inline void SetMode(ULONG mode){
+	inline void SetMode(UINT32 mode){
 		m_mode = mode;
 	}
 	inline void SetNumOfBlocks(ULONG nBlocks){
@@ -96,13 +101,16 @@ public:
 	}
 	void Init(SubsetData * sData);
 	inline void ResetBlock(ULONG i){
+
+		m_mode = 0;
+
 		m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
 		
 		m_blocks[i].realUsedBlockLen = m_blocks[i].blockLen;
 		
 		m_blocks[i].curPosOfDataFile = m_dataFileHeadLen;
 	}
-	void Init(ULONG i, CalibData * cData);
+	void Init(CalibData &cData);
 	inline BUF_TYPE * GetCurrentPositionOfBlock(ULONG i){
 		return m_blocks[i].curPosOfBlock;
 	}
@@ -125,7 +133,7 @@ public:
 	inline void WriteBlock(ULONG i);
 	inline void WriteBlocksByReadFile(ULONG i);
 	inline void WriteBlockByRandomNumber(ULONG i);
-	void SetDataFilePathOfAllBlocks(CString  rootPath);
+	void SetDataFilePathByRootPath(CString  rootPath);
 	inline void SetDataFilePathOfAllBlocks(CString * filePath){
 		for (ULONG i = 0; i < m_numOfBlocks; i++)
 		{
@@ -140,7 +148,7 @@ public:
 		} 
 		else
 		{
-			m_blocks[i].calibDataFilePath = filePath;
+			m_calibDataFilePath = filePath;
 		}
 		
 	}

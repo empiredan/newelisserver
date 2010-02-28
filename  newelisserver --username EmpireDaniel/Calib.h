@@ -33,8 +33,6 @@ inline static void net_to_host_long(CalibParameter& calibParameter)
 	calibParameter.m_nM7Length = ntohl(calibParameter.m_nM7Length);
 }
 
-
-
 typedef struct{
 	short status;
 	short time;
@@ -42,7 +40,7 @@ typedef struct{
 	//int mLenOfSubset;
 
 	RTCSubset rtcSubset;
-	int blockNo;
+	ULONG blockNo;
 
 }CalibData;
 
@@ -58,8 +56,15 @@ private:
 	CalibParameter m_calibParameter;
 	CalibData m_calibData;
 
+	ULONG m_totalReturnedCalibDataLen;
+
 //Operations
-	void Init(BUF_TYPE * bodyBuf, ULONG bodyLen, ACTList actList);
+public:
+	void Init(BUF_TYPE * bodyBuf, ULONG bodyLen, ACTList * actList);
+	inline ULONG GetBlockNo(){return m_calibData.blockNo;}
+	inline CalibData GetCalibData(){return m_calibData;}
+	inline ULONG GetTotalCalibDataLen(){return m_totalReturnedCalibDataLen;}
+	inline ULONG GetSubsetLen(){return m_calibData.subsetLen;}
 	inline int SetSubsetLen(){
 		int m2, m5, m7;
 		RETURNED_M_LEN(m2, m_calibParameter.m_nM2Length);

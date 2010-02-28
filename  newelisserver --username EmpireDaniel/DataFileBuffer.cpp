@@ -23,6 +23,8 @@ CDataFileBuffer::CDataFileBuffer()
 	m_numOfBlocks = 0;
 	m_blocks = NULL;
 	m_dataFileHeadLen = 3*sizeof(UINT32);
+	m_actDataFileRootPath = "";
+	m_calverDataFileRootPath = "";
 	m_mode = 0;
 }
 
@@ -70,9 +72,19 @@ void CDataFileBuffer::Init(SubsetData * sData)
 	}
 }
 
-void CDataFileBuffer::Init(ULONG i, CalibData * cData)
+void CDataFileBuffer::Init(CalibData &cData)
 {
+	m_mode = 1;
 
+	m_calibData = cData;
+
+	ULONG i = m_calibData.blockNo;
+
+	m_blocks[i].curPosOfBlock = m_blocks[i].headOfBlock;
+
+	m_blocks[i].realUsedBlockLen = (m_blocks[i].blockLen/m_calibData.subsetLen)*m_calibData.subsetLen;
+
+	m_blocks[i].curPosOfDataFile = m_dataFileHeadLen;
 }
 
 
@@ -108,9 +120,9 @@ inline void CDataFileBuffer::WriteBlock(ULONG i)
 	} 
 	else
 	{
-		if (m_blocks[i].calibDataFilePath != "")
+		if (m_calibDataFilePath != "")
 		{
-			if (m_blocks[i].dataFile.Open(m_blocks[i].calibDataFilePath, \
+			if (m_blocks[i].dataFile.Open(m_calibDataFilePath, \
 				CFile::modeRead, &fileException))
 			{
 				WriteBlocksByReadFile(i);
@@ -212,13 +224,13 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 	} 
 	else
 	{
-		statusTypeLen = sizeof(m_blocks[i].calibData.status);
+		statusTypeLen = sizeof(m_calibData.status);
 		
 		for (BUF_TYPE * pBlock = m_blocks[i].headOfBlock; pBlock < blockEnd; )
 		{
-			memcpy(pBlock, (BUF_TYPE *)&m_blocks[i].calibData.status, statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)&m_calibData.status, statusTypeLen);
 			pBlock+= statusTypeLen;
-			memcpy(pBlock, (BUF_TYPE *)&m_blocks[i].calibData.time, statusTypeLen);
+			memcpy(pBlock, (BUF_TYPE *)&m_calibData.time, statusTypeLen);
 			pBlock+= statusTypeLen;
 			/*
 			BUF_TYPE * subsetEnd = pBlock+(m_blocks[i].calibData-2*statusTypeLen);
@@ -233,21 +245,57 @@ inline void CDataFileBuffer::WriteBlockByRandomNumber(ULONG i)
 
 }
 
-void CDataFileBuffer::SetDataFilePathOfAllBlocks(CString rootPath)
+void CDataFileBuffer::SetDataFilePathByRootPath(CString rootPath)
 {
 	m_actDataFileRootPath = rootPath;
 	CFileFind dataFileFind;
-	BOOL isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
-	if (isRootPathFinded)
+	BOOL isRootPathFinded;
+	if (!m_mode)
 	{
-		for (ULONG i = 0; i < m_numOfBlocks; i++)
+		isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+		if (isRootPathFinded)
+		{
+			for (ULONG i = 0; i < m_numOfBlocks; i++)
+			{
+				BOOL isDataFilePathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+				while(isDataFilePathFinded)
+				{
+					isDataFilePathFinded = dataFileFind.FindNextFile();
+					CString dataFilePath = dataFileFind.GetFilePath();
+					
+					UINT32 dataFileHeader[3];
+					BUF_TYPE dataFileHeaderBuf[sizeof(UINT32)*3];
+					CFile dataFile(dataFilePath, CFile::modeRead);
+					dataFile.Read(dataFileHeaderBuf, sizeof(UINT32)*3);
+					dataFile.Close();
+					
+					memcpy(dataFileHeader, dataFileHeaderBuf, sizeof(UINT32)*3);
+					UINT32 toolADDR = dataFileHeader[0];
+					UINT32 subsetNo = dataFileHeader[1];
+					UINT32 dataFileType = dataFileHeader[2];
+					if (toolADDR == m_blocks[i].subsetData.rtcBlockDataHeader.toolAddr
+						&& subsetNo == m_blocks[i].subsetData.rtcBlockDataHeader.subset
+						&& dataFileType == 0)
+					{
+						m_blocks[i].subsetDataFilePath = dataFilePath;
+						break;
+					}//if
+				}//while
+				
+			}//for
+		}//if
+	} 
+	else
+	{
+		isRootPathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
+		if (isRootPathFinded)
 		{
 			BOOL isDataFilePathFinded = dataFileFind.FindFile(m_actDataFileRootPath+"\\*.dat");
 			while(isDataFilePathFinded)
 			{
 				isDataFilePathFinded = dataFileFind.FindNextFile();
 				CString dataFilePath = dataFileFind.GetFilePath();
-
+				
 				UINT32 dataFileHeader[3];
 				BUF_TYPE dataFileHeaderBuf[sizeof(UINT32)*3];
 				CFile dataFile(dataFilePath, CFile::modeRead);
@@ -258,17 +306,18 @@ void CDataFileBuffer::SetDataFilePathOfAllBlocks(CString rootPath)
 				UINT32 toolADDR = dataFileHeader[0];
 				UINT32 subsetNo = dataFileHeader[1];
 				UINT32 dataFileType = dataFileHeader[2];
-				if (toolADDR == m_blocks[i].subsetData.rtcBlockDataHeader.toolAddr
-					&& subsetNo == m_blocks[i].subsetData.rtcBlockDataHeader.subset
-					&& dataFileType == 0)
+				ULONG i = m_calibData.blockNo;
+				if (toolADDR == (UINT32)m_calibData.rtcSubset.toolAddress
+					&& subsetNo == (UINT32)m_calibData.rtcSubset.subsetNo
+					&& dataFileType == 1)
 				{
 					m_blocks[i].subsetDataFilePath = dataFilePath;
 					break;
 				}//if
 			}//while
-
-		}//for
-	}//if
+		}
+	}
+	
 	dataFileFind.Close();
 	
 }
