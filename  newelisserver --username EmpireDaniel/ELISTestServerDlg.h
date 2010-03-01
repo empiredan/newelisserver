@@ -12,8 +12,6 @@
 #include "MyTabCtrl.h"
 //#include "Queue.h"
 #include "commands.h"
-//#include "CalibParameter.h"
-//#include "CalibSubset.h"
 #include "ACTList.h"
 #include "Calib.h"
 #include "CommandHandlerThread.h"
@@ -40,7 +38,11 @@
 #define WM_CALVER_LIST WM_USER+29
 #define WM_ENABLE_START_LOG WM_USER+30
 #define WM_ENABLE_PAUSE_LOG WM_USER+31
-
+#define WM_ENABLE_ACT_ROOT_FOLDER_BUTTON WM_USER+32
+#define WM_ENABLE_CALVER_ROOT_FOLDER_BUTTON WM_USER+33
+#define WM_ENABLE_DATA_BUFFER_SIZE_BUTTON WM_USER+34
+#define WM_ENABLE_SERVER_PORT_CONNECTION WM_USER+35
+#define WM_ENABLE_SERVER_PORT_DISCONNECTION WM_USER+36
 
 class CELISTestServerDlg : public CDialog
 {
@@ -72,7 +74,8 @@ public:
 	ULONG m_actNum;
 	CString m_calverDataFilePath;
 
-	
+	BOOL m_isACTRootFolderButtonEnabled;
+	BOOL m_isCALVERRootFolderButtonEnabled;
 
 	/**
 	* Parameters showing
@@ -97,7 +100,7 @@ public:
 
 	BOOL m_isStartLogEnabled;
 	BOOL m_isPauseLogEnabled;
-
+	BOOL m_isClosingWindowEnabled;
 	/**
 	* ACT list
 	*/
@@ -179,15 +182,17 @@ public:
 
 // Operations
 public:
+	void EnableOkAndCancelButton(BOOL enableButton);
 	void EnableACTRootFolderSelection(BOOL enableButton);
 	void EnableCALVERRootFolderSelection(BOOL enableButton);
 	void EnableStartLog(BOOL enableButton);
 	void EnablePauseLog(BOOL enableButton);
+	void EnableDataBufferSizeSet(BOOL enableButton);
 	void SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	void SetDataFilePath(ULONG i, CString dataFilePath, CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	void SetAllDataFilePaths(CMyListCtrl& myListCtrl, UINT32 dataFileType);
 	void ReadConfigFile();
-	
+	void WriteConfigFile();
 
 // Implementation
 protected:
@@ -203,30 +208,31 @@ protected:
 	afx_msg void OnButtonCancel();
 	afx_msg void OnSelchangeElistestserverTab(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnButtonActFolder();
-	//afx_msg void OnTimer(UINT nIDEvent);
-	afx_msg void OnButtonServerPort();
+	afx_msg void OnButtonServerPortConnection();
+	afx_msg void OnButtonServerPortDisconnection();
 	afx_msg void OnButtonCalverFolder();
 	afx_msg void OnButtonDataBufferSize();
 	afx_msg void OnRadioImperial();
 	afx_msg void OnRadioMetric();
 	afx_msg void OnButtonStartLog();
 	afx_msg void OnButtonPauseLog();
-
 	afx_msg VOID OnWorkModeUpdated(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnDirectionUpdated(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnDepthUpdated(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnSpeedUpdated(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnTimeUpdated(WPARAM wParam, LPARAM lParam);
-
-	afx_msg VOID OnShowServerIPAndPort(WPARAM wParam, LPARAM lParam);
-	//afx_msg VOID OnShowServerPort(WPARAM wParam, LPARAM lParam);
-	afx_msg VOID OnShowClientIPAndPort(WPARAM wParam, LPARAM lParam);
-	//afx_msg VOID OnShowClientPort(WPARAM wParam, LPARAM lParam);
-	afx_msg VOID OnACTListUpdated(WPARAM wParam, LPARAM lParam);
-	afx_msg VOID OnCALVERListUpdated(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnStartLogEnabled(WPARAM wParam, LPARAM lParam);
 	afx_msg VOID OnPauseLogEnabled(WPARAM wParam, LPARAM lParam);
-
+	afx_msg VOID OnShowServerIPAndPort(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnShowClientIPAndPort(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnButtonServerPortConnectionEnabled(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnButtonServerPortDisconnectionEnabled(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnACTListUpdated(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnCALVERListUpdated(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnButtonACTRootFolderEnabled(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnButtonCALVERRootFolderEnabled(WPARAM wParam, LPARAM lParam);
+	afx_msg VOID OnButtonDataBufferSizeEnabled(WPARAM wParam, LPARAM lParam);
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

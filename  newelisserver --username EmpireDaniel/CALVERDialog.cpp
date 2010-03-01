@@ -72,6 +72,7 @@ void CCALVERDialog::OnDblclkListCalver(NMHDR* pNMHDR, LRESULT* pResult)
 				{
 					strFilePath = openActDataFileDlg.GetPathName();
 					m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_calverListCtrl, 1);
+					m_myTabCtrl->m_elisTestServerDlg->m_cmdHandlerThread->PostThreadMessage(WM_CALVER_DATAFILE_PATH, NULL, (LPARAM)&strFilePath);
 					/*
 					if (m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_calverListCtrl, 1))
 					{

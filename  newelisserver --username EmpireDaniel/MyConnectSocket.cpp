@@ -6,7 +6,8 @@
 #include "MyConnectSocket.h"
 
 #include "CommandHandlerThread.h"
-
+#include "SocketThread.h"
+#include "ELISTestServerDlg.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -116,6 +117,8 @@ void CMyConnectSocket::OnReceive(int nErrorCode)
 void CMyConnectSocket::OnClose(int nErrorCode) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	
+	//AfxMessageBox(_T("Hello!"));
+	::SendMessage((HWND)(m_socketThread->GetMainWnd()->GetSafeHwnd()), WM_ENABLE_SERVER_PORT_DISCONNECTION, NULL, (LPARAM)FALSE);
+	this->Close();
 	CAsyncSocket::OnClose(nErrorCode);
 }

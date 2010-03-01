@@ -65,7 +65,7 @@ VOID CSocketThread::OnPort(WPARAM wParam, LPARAM lParam)
 	
 	if(!m_listenSocket.Create(m_socketPort)) {
 		AfxMessageBox(_T("Socket Error!"));
-		m_listenSocket.Close();
+		//m_listenSocket.Close();
 	}else{
 		
 		//m_listenSocket.m_pCmdHandlerThread = m_pCmdHandlerThread;
