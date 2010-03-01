@@ -22,7 +22,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CCommandHandlerThread, CWinThread)
 
 CCommandHandlerThread::CCommandHandlerThread()
-: m_logFile(".\\Elis_Test_Server_Log.txt", CFile::modeCreate|CFile::modeWrite)
+//: m_logFile(".\\Elis_Test_Server_Log.txt", CFile::modeCreate|CFile::modeWrite)
 {
 	m_cmdType = 0;
 	m_totalLen = SOCK_RECEIVE_HEADER_LEN;
@@ -56,11 +56,9 @@ BOOL CCommandHandlerThread::InitInstance()
 int CCommandHandlerThread::ExitInstance()
 {
 	// TODO:  perform any per-thread cleanup here
-	//::KillTimer(NULL, m_subsetDataTimerIdentifier);
-	//::KillTimer(NULL, m_depthDataTimerIdentifier);
-	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
-	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
-	m_logFile.Close();
+	KillSubsetDataTimer();
+	KillDepthDataTimer();
+	//m_logFile.Close();
 	return CWinThread::ExitInstance();
 }
 
@@ -128,11 +126,8 @@ VOID CCommandHandlerThread::OnSocketThreadID(WPARAM wParam, LPARAM lParam)
 }
 VOID CCommandHandlerThread::OnDepthDataTimerSetted(WPARAM wParam, LPARAM lParam)
 {
-	::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
-	::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);
-	//::KillTimer(NULL, m_depthDataTimerIdentifier);
-	//m_depthDataTimerIdentifier = ::SetTimer(NULL, NULL, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);//
-	
+	KillDepthDataTimer();
+	SetDepthDataTimer();
 }
 /*
 VOID CALLBACK CCommandHandlerThread::TimerProcWrapper(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
@@ -284,11 +279,11 @@ void CCommandHandlerThread::WorkModeProc()
 	case RtcSYS_IDLE_CMD:
 		break;
 	case RtcSYS_CALIBSTART_CMD:
-		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
-		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
+		KillSubsetDataTimer();
+		KillDepthDataTimer();
 		break;
 	case RtcSYS_TRAINSTART_CMD:
-		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+		KillSubsetDataTimer();
 		break;
 	case RtcSYS_RECSTART_CMD:
 		m_cACTList.SetDepthDuDeltaWithDirection(m_cWorkMode.GetDirection());
@@ -307,10 +302,7 @@ void CCommandHandlerThread::WorkModeProc()
 			* Try to kill the SUBSET DATA TIMER if exists
 			**/
 			//if (m_cWorkMode.GetOldWorkMode() != RtcSYS_NA_CMD)
-			::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
-			
-			//::KillTimer(NULL, m_subsetDataTimerIdentifier);
-
+			KillSubsetDataTimer();
 			
 			/**
 			* Reset the time by zero showed in the Dialog
@@ -338,19 +330,18 @@ void CCommandHandlerThread::WorkModeProc()
 			{
 				m_isReturnSubsetDataEnabled = TRUE;
 			}
-			if (m_isReturnSubsetDataEnabled)
-			{
-				::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
-				//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
-				::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_START_LOG, NULL, FALSE);
-				::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_PAUSE_LOG, NULL, TRUE);
-			}
-			else
-			{
-				::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_START_LOG, NULL, TRUE);
-				::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_PAUSE_LOG, NULL, FALSE);
-			}
 			
+		}
+		if (m_isReturnSubsetDataEnabled)
+		{
+			SetSubsetDataTimer();
+			::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_START_LOG, NULL, FALSE);
+			::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_PAUSE_LOG, NULL, TRUE);
+		}
+		else
+		{
+			::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_START_LOG, NULL, TRUE);
+			::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_PAUSE_LOG, NULL, FALSE);
 		}
 		break;
 	default:
@@ -382,12 +373,13 @@ VOID CCommandHandlerThread::OnACTDataFilePath(WPARAM wParam, LPARAM lParam)
 {
 	ULONG i = (ULONG)wParam;
 	CString * actDataFile = (CString *)lParam;
-	m_cDataFileBuffer.SetDataFilePathOfBlock(i, *actDataFile);
+	m_cDataFileBuffer.SetDataFilePathOfBlock(*actDataFile, i);
 	
 }
 VOID CCommandHandlerThread::OnCALVERDataFilePath(WPARAM wParam, LPARAM lParam)
 {
 	CString * calverDataFile = (CString *)lParam;
+	m_cDataFileBuffer.SetDataFilePathOfBlock(*calverDataFile);
 }
 VOID CCommandHandlerThread::OnReturnSubsetDataEnabled(WPARAM wParam, LPARAM lParam)
 {
@@ -405,7 +397,7 @@ VOID CCommandHandlerThread::OnReturnSubsetDataEnabled(WPARAM wParam, LPARAM lPar
 		case RtcSYS_RECSTART_CMD:
 			if (m_cWorkMode.GetWorkMode() == m_cWorkMode.GetOldWorkMode())
 			{
-				::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
+				SetSubsetDataTimer();
 				break;
 			}
 			
@@ -415,7 +407,7 @@ VOID CCommandHandlerThread::OnReturnSubsetDataEnabled(WPARAM wParam, LPARAM lPar
 			ResetCurrentTiming();
 
 		case RtcSYS_SAME_STANDBY_CMD:
-			::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
+			SetSubsetDataTimer();
 			break;
 
 		default:
@@ -428,11 +420,11 @@ VOID CCommandHandlerThread::OnReturnSubsetDataEnabled(WPARAM wParam, LPARAM lPar
 		{
 		case RtcSYS_RECSTART_CMD:
 			m_cWorkMode.SetOldWorkMode(RtcSYS_RECSTART_CMD);
-			::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+			KillSubsetDataTimer();
 			break;
 		case RtcSYS_STANDBY_CMD:
 			m_cWorkMode.SetOldWorkMode(RtcSYS_SAME_STANDBY_CMD);
-			::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+			KillSubsetDataTimer();
 			break;
 		default:
 			break;
@@ -606,7 +598,7 @@ void CCommandHandlerThread::NetCmd_InitServiceTable()
 
 	//Send the "show ACT list" message to Dialog
 	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ACT_LIST, NULL, (LPARAM)m_cACTList.GetACTList());
-	
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_DATA_BUFFER_SIZE_BUTTON, NULL, (LPARAM)FALSE);
 	/*
 	char logdata[1024];
 	sprintf(logdata, "CCommandHandler::InitServiceTable\n");
@@ -625,6 +617,7 @@ void CCommandHandlerThread::NetCmd_CalibPara()
 	CELISTestServerDlg::m_accessDataFileMutex.Unlock();
 	//Send the "show calib parameter" message to Dialog
 	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_CALVER_LIST, NULL, (LPARAM)m_cCalib.GetCalibData());
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_CALVER_ROOT_FOLDER_BUTTON, NULL, (LPARAM)FALSE);
 
 	
 	/*
@@ -651,7 +644,8 @@ void CCommandHandlerThread::NetCmd_CalibStart()
 }
 void CCommandHandlerThread::NetCmd_CalibStop() 
 {
-	::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_CALVER_ROOT_FOLDER_BUTTON, NULL, (LPARAM)TRUE);
+	SetDepthDataTimer();
 	//m_cDataFileBuffer.ResetBlock(m_cCalib.GetBlockNo());
 	/*
 	char logdata[1024];
@@ -687,38 +681,6 @@ void CCommandHandlerThread::NetCmd_CtrlWorkState() {
 	//Process the updated work mode
 	WorkModeProc();
 
-	/*
-	dlg->wms->fillWorkMode(bodyBuf, bodyLen);
-
-
-	
-	char logdata[1024];
-	sprintf(logdata, "NetCmd_CtrlWorkState,received cmd:%lx, state:%lx, direction:%d\n",
-		cmdType, dlg->wms->mode, dlg->wms->direction);
-	dlg->log.Write(logdata, strlen(logdata));
-	rtnh = (ULONG*)wm->buf;
-	conts = (UINT32*)(wm->buf+2*sizeof(ULONG));
-	sprintf(logdata, "NetCmd_CtrlWorkState,return cmd:%lx,size:%d,conts:%lx\n",rtnh[0], rtnh[1], conts[0]);
-	
-
-	dlg->log.Write(logdata, strlen(logdata));
-	//sprintf(logdata, "NetCmd_CtrlWorkState,在fillWorkmode之后，应该执行一个更新界面上");
-	//sprintf(logdata, "工作状态，方向等元素的命令,要在CELISTestServerDlg中添加相应的变量");
-	//sprintf(logdata, "和接口函数\n");
-	dlg->log.Flush();
-
-	dlg->getFrontDataQueue()->enQueue(wm);
-
-	//在反馈了应答之后，应该执行一个更新界面上
-	//工作状态，方向等元素的命令
-	//要在CELISTestServerDlg中添加相应的变量
-	//和接口函数
-	dlg->SetCurrentWorkState();//这里有bug，要检查091213
-	dlg->SetDirection();
-
-	//最后执行工作状态改变后在新状态下应该做的事
-	dlg->HandleWorkStateChange();
-	*/
 }
 /*
 void CCommandHandlerThread::NetCmd_SetStandbyTimeInterval() {
@@ -782,12 +744,11 @@ void CCommandHandlerThread::NetCmd_CtrlActSwitch() {
 }
 */
 void CCommandHandlerThread::NetCmd_CtrlActDeactivate() {
+
+	KillSubsetDataTimer();
+	m_cWorkMode.SetWorkMode(RtcSYS_NA_CMD);
+	::PostMessage((HWND)(GetMainWnd()->GetSafeHwnd()), WM_ENABLE_DATA_BUFFER_SIZE_BUTTON, NULL, (LPARAM)TRUE);
 	/*
-
-	dlg->wms->init();
-	dlg->StopLogTimer();
-
-
 	char logdata[1024];
 	sprintf(logdata, "Implement me!! CCommandHandler::NetCmd_CtrlActDeactivate\n");
 	dlg->log.Write(logdata, strlen(logdata));
@@ -860,10 +821,8 @@ void CCommandHandlerThread::NetCmd_DepthSpeed() {
 		case RtcSYS_RECSTART_CMD:
 			
 		case RtcSYS_STANDBY_CMD:
-			::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
-			//::KillTimer(NULL, m_subsetDataTimerIdentifier);
-			::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
-			//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
+			KillSubsetDataTimer();
+			SetSubsetDataTimer();
 			break;
 		default:
 			break;

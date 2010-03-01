@@ -72,6 +72,7 @@ void CACTDialog::OnDblclkListAct(NMHDR* pNMHDR, LRESULT* pResult)
 				{
 					strFilePath = openActDataFileDlg.GetPathName();
 					m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_actListCtrl, 0);
+					m_myTabCtrl->m_elisTestServerDlg->m_cmdHandlerThread->PostThreadMessage(WM_ACT_DATAFILE_PATH, (WPARAM)rowNo, (LPARAM)&strFilePath);
 					/*
 					if (m_myTabCtrl->m_elisTestServerDlg->SetDataFilePath(rowNo, strFilePath, m_actListCtrl, 0))
 					{

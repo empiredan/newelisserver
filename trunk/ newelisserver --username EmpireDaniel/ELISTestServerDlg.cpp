@@ -67,23 +67,25 @@ END_MESSAGE_MAP()
 CMutex CELISTestServerDlg::m_accessDataFileMutex;
 
 CELISTestServerDlg::CELISTestServerDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CELISTestServerDlg::IDD, pParent),
-	log(".\\commandlist.txt", CFile::modeCreate|CFile::modeWrite|CFile::shareDenyNone)
+	: CDialog(CELISTestServerDlg::IDD, pParent)//,
+	//log(".\\commandlist.txt", CFile::modeCreate|CFile::modeWrite|CFile::shareDenyNone)
 {
 	//{{AFX_DATA_INIT(CELISTestServerDlg)
 		// NOTE: the ClassWizard will add member initialization here
+	//}}AFX_DATA_INIT
+	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	CString m_serverIP = "0.0.0.0";
 	m_serverPort = 0;
 	m_clientIP = "0.0.0.0";
 	m_clientPort = 0;
-
+	
 	m_actDataFileRootPath = "";
 	m_actDataFilePath = NULL;
 	m_calverDataFileRootPath = "";
 	m_calverDataFilePath = "";
 	m_dataFileBufSize = 10*1024*1024;
 	m_actNum = 0;
-
+	
 	m_speedDUPM = 0;
 	m_speedPM = 0.0;
 	m_speedPMStr.Format(FLOAT_TO_STRING_FORMAT, m_speedPM);
@@ -95,15 +97,37 @@ CELISTestServerDlg::CELISTestServerDlg(CWnd* pParent /*=NULL*/)
 	m_measure = 1;
 	m_isStartLogEnabled = FALSE;
 	m_isPauseLogEnabled = FALSE;
-
+	m_isClosingWindowEnabled = TRUE;
+	
 	m_socketThread = NULL;
 	m_cmdHandlerThread = NULL;
-
-	//}}AFX_DATA_INIT
-	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
-
+void CELISTestServerDlg::WriteConfigFile()
+{
+	CString dataConfigFileName = "dataconfig.ini";//D:\\vc6\\MyProjects\\elis\\ELISTestServer6.3.2
+	char currentDirectoryChar[1024];
+	GetCurrentDirectory(1024, currentDirectoryChar);
+	CString dataConfigFilePath = currentDirectoryChar;
+	dataConfigFilePath+= "\\";
+	dataConfigFilePath+= dataConfigFileName;
+	
+	//_TCHAR confBuf[1024];
+	CString confStr;
+	
+	confStr.Format("%d", m_measure);
+	WritePrivateProfileString("Parameter Setting", "Measure", confStr, dataConfigFilePath);
+	
+	confStr.Format("%d", m_serverPort);
+	WritePrivateProfileString("Net Connection", "Port", confStr, dataConfigFilePath);
+	
+	WritePrivateProfileString("Data File", "ACTRoot", m_actDataFileRootPath, dataConfigFilePath);
+	
+	WritePrivateProfileString("Data File", "CALVERRoot", m_calverDataFileRootPath, dataConfigFilePath);
+	
+	confStr.Format("%ld", m_dataFileBufSize/(1024*1024));
+	WritePrivateProfileString("Data File", "BufSize", confStr, dataConfigFilePath);
+}
 CELISTestServerDlg::~CELISTestServerDlg()
 {
 
@@ -122,49 +146,20 @@ CELISTestServerDlg::~CELISTestServerDlg()
 		m_actDataFilePath = NULL;
 	}
 
-	CString dataConfigFileName = "dataconfig.ini";//D:\\vc6\\MyProjects\\elis\\ELISTestServer6.3.2
-	char currentDirectoryChar[1024];
-	GetCurrentDirectory(1024, currentDirectoryChar);
-	CString dataConfigFilePath = currentDirectoryChar;
-	dataConfigFilePath+= "\\";
-	dataConfigFilePath+= dataConfigFileName;
-	
-	//_TCHAR confBuf[1024];
-	CString confStr;
-	
-	//WritePrivateProfileString("Parameter Setting", "TrueDepth", m_trueDepthStr, dataConfigFilePath);
-	
-	
-	//WritePrivateProfileString("Parameter Setting", "Speed", m_speedStr, dataConfigFilePath);
-	
-	confStr.Format("%d", m_measure);
-	WritePrivateProfileString("Parameter Setting", "Measure", confStr, dataConfigFilePath);
-	
-	confStr.Format("%d", m_serverPort);
-	WritePrivateProfileString("Net Connection", "Port", confStr, dataConfigFilePath);
-	
-	WritePrivateProfileString("Data File", "ACTRoot", m_actDataFileRootPath, dataConfigFilePath);
-	
-	WritePrivateProfileString("Data File", "CALVERRoot", m_calverDataFileRootPath, dataConfigFilePath);
-	
-	confStr.Format("%ld", m_dataFileBufSize/(1024*1024));
-	WritePrivateProfileString("Data File", "BufSize", confStr, dataConfigFilePath);
+	WriteConfigFile();
 
-
-	/*
-	if(m_pmasterDataQueue){
-		delete m_pmasterDataQueue;
-		m_pmasterDataQueue=NULL;
-		//char* t="m_pmasterDataQueue deconstructed!";
-		//AfxMessageBox(_T(t), MB_YESNO, 0);
-	}
-	*/	
-	log.Close();
+	//log.Close();
 }
 
 void CELISTestServerDlg::EnableStartLog(BOOL enableButton)
 {
 	GetDlgItem(IDC_BUTTON_START_LOG)->EnableWindow(enableButton);
+}
+
+void CELISTestServerDlg::EnableOkAndCancelButton(BOOL enableButton)
+{
+	GetDlgItem(IDC_Ok)->EnableWindow(enableButton);
+	GetDlgItem(IDC_Cancel)->EnableWindow(enableButton);
 }
 
 void CELISTestServerDlg::EnablePauseLog(BOOL enableButton)
@@ -181,7 +176,11 @@ void CELISTestServerDlg::EnableCALVERRootFolderSelection(BOOL enableButton)
 {
 	GetDlgItem(IDC_BUTTON_CALVER_FOLDER)->EnableWindow(enableButton);
 }
-
+void CELISTestServerDlg::EnableDataBufferSizeSet(BOOL enableButton)
+{
+	GetDlgItem(IDC_BUTTON_DATA_BUFFER_SIZE)->EnableWindow(enableButton);
+	GetDlgItem(IDC_EDIT_DATA_BUFFER_SIZE)->EnableWindow(enableButton);
+}
 void CELISTestServerDlg::SetDataFilePath(ULONG i, CMyListCtrl& myListCtrl, UINT32 dataFileType)
 {
 	CFileFind dataFileFind;
@@ -308,33 +307,32 @@ BEGIN_MESSAGE_MAP(CELISTestServerDlg, CDialog)
 	ON_BN_CLICKED(IDC_Cancel, OnButtonCancel)
 	ON_NOTIFY(TCN_SELCHANGE, IDC_ELISTESTSERVER_TAB, OnSelchangeElistestserverTab)
 	ON_BN_CLICKED(IDC_BUTTON_ACT_FOLDER, OnButtonActFolder)
-	ON_WM_TIMER()
-	ON_BN_CLICKED(IDC_BUTTON_SERVER_PORT_CONNECTION, OnButtonServerPort)
+	ON_BN_CLICKED(IDC_BUTTON_SERVER_PORT_CONNECTION, OnButtonServerPortConnection)
+	ON_BN_CLICKED(IDC_BUTTON_SERVER_PORT_DISCONNECTION, OnButtonServerPortDisconnection)
 	ON_BN_CLICKED(IDC_BUTTON_CALVER_FOLDER, OnButtonCalverFolder)
 	ON_BN_CLICKED(IDC_BUTTON_DATA_BUFFER_SIZE, OnButtonDataBufferSize)
-	//ON_BN_CLICKED(IDC_BUTTON_SPEED, OnButtonSpeed)
-	//ON_BN_CLICKED(IDC_BUTTON_START_LOG, OnButtonStartLog)
-	//ON_BN_CLICKED(IDC_BUTTON_TRUE_DEPTH, OnButtonTrueDepth)
 	ON_BN_CLICKED(IDC_RADIO_IMPERIAL, OnRadioImperial)
 	ON_BN_CLICKED(IDC_RADIO_METRIC, OnRadioMetric)
 	ON_BN_CLICKED(IDC_BUTTON_START_LOG, OnButtonStartLog)
 	ON_BN_CLICKED(IDC_BUTTON_PAUSE_LOG, OnButtonPauseLog)
-	//ON_MESSAGE
 	ON_MESSAGE(WM_WORKMODE, OnWorkModeUpdated)
 	ON_MESSAGE(WM_DIRECTION, OnDirectionUpdated)
 	ON_MESSAGE(WM_DEPTH, OnDepthUpdated)
 	ON_MESSAGE(WM_SPEED, OnSpeedUpdated)
 	ON_MESSAGE(WM_TIME, OnTimeUpdated)
-	ON_MESSAGE(WM_SERVER_IP_PORT, OnShowServerIPAndPort)
-	//ON_MESSAGE(WM_SERVER_IP, OnShowServerIP)
-	//ON_MESSAGE(WM_SERVER_PORT, OnShowServerPort)
-	ON_MESSAGE(WM_CLIENT_IP_PORT, OnShowClientIPAndPort)
-	//ON_MESSAGE(WM_CLIENT_IP, OnShowClientIP)
-	//ON_MESSAGE(WM_CLIENT_PORT, OnShowClientPort)
-	ON_MESSAGE(WM_ACT_LIST, OnACTListUpdated)
-	ON_MESSAGE(WM_CALVER_LIST, OnCALVERListUpdated)
 	ON_MESSAGE(WM_ENABLE_START_LOG, OnStartLogEnabled)
 	ON_MESSAGE(WM_ENABLE_PAUSE_LOG, OnPauseLogEnabled)
+	ON_MESSAGE(WM_SERVER_IP_PORT, OnShowServerIPAndPort)
+	ON_MESSAGE(WM_CLIENT_IP_PORT, OnShowClientIPAndPort)
+	ON_MESSAGE(WM_ENABLE_SERVER_PORT_CONNECTION, OnButtonServerPortConnectionEnabled)
+	ON_MESSAGE(WM_ENABLE_SERVER_PORT_DISCONNECTION, OnButtonServerPortDisconnectionEnabled)
+	ON_MESSAGE(WM_ACT_LIST, OnACTListUpdated)
+	ON_MESSAGE(WM_CALVER_LIST, OnCALVERListUpdated)
+	ON_MESSAGE(WM_ENABLE_ACT_ROOT_FOLDER_BUTTON, OnButtonACTRootFolderEnabled)
+	ON_MESSAGE(WM_ENABLE_CALVER_ROOT_FOLDER_BUTTON, OnButtonCALVERRootFolderEnabled)
+	ON_MESSAGE(WM_ENABLE_DATA_BUFFER_SIZE_BUTTON, OnButtonDataBufferSizeEnabled)
+	ON_WM_TIMER()
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -358,6 +356,8 @@ VOID CELISTestServerDlg::OnWorkModeUpdated(WPARAM wParam, LPARAM lParam)
 		m_workModeStr = "RECSTART";
 		break;
 	case RtcSYS_TRAINSTART_CMD:
+		EnableStartLog(FALSE);
+		EnablePauseLog(FALSE);
 		m_workModeStr = "TRAINSTART";
 		break;
 	case RtcSYS_CALIBSTART_CMD:
@@ -459,6 +459,19 @@ VOID CELISTestServerDlg::OnShowClientIPAndPort(WPARAM wParam, LPARAM lParam)
 	CString clientPort;
 	clientPort.Format("%d", m_clientPort);
 	GetDlgItem(IDC_STATIC_CLIENT_IP_PORT_VALUE)->SetWindowText(_T(m_clientIP+":"+clientPort));
+}
+VOID CELISTestServerDlg::OnButtonServerPortConnectionEnabled(WPARAM wParam, LPARAM lParam)
+{
+	BOOL isServerPortConnectionEnabled = (BOOL)lParam;
+}
+VOID CELISTestServerDlg::OnButtonServerPortDisconnectionEnabled(WPARAM wParam, LPARAM lParam)
+{
+	BOOL isServerPortDisconnectionEnabled = (BOOL)lParam;
+	if (!isServerPortDisconnectionEnabled)
+	{//"MyConnectSocket" has been disconnected
+		GetDlgItem(IDC_STATIC_CLIENT_IP_PORT_VALUE)->SetWindowText(_T(""));
+	}
+	
 }
 /*
 VOID CELISTestServerDlg::OnShowClientIP(WPARAM wParam, LPARAM lParam)
@@ -563,6 +576,23 @@ VOID CELISTestServerDlg::OnPauseLogEnabled(WPARAM wParam, LPARAM lParam)
 	m_isPauseLogEnabled = (BOOL)lParam;
 	EnablePauseLog(m_isPauseLogEnabled);
 }
+VOID CELISTestServerDlg::OnButtonACTRootFolderEnabled(WPARAM wParam, LPARAM lParam)
+{
+	m_isACTRootFolderButtonEnabled = (BOOL)lParam;
+	EnableACTRootFolderSelection(m_isACTRootFolderButtonEnabled);
+}
+VOID CELISTestServerDlg::OnButtonCALVERRootFolderEnabled(WPARAM wParam, LPARAM lParam)
+{
+	m_isCALVERRootFolderButtonEnabled = (BOOL)lParam;
+	EnableCALVERRootFolderSelection(m_isCALVERRootFolderButtonEnabled);
+}
+VOID CELISTestServerDlg::OnButtonDataBufferSizeEnabled(WPARAM wParam, LPARAM lParam)
+{
+	BOOL isDataBufferSizeButtonEnabled = (BOOL)lParam;
+	EnableDataBufferSizeSet(isDataBufferSizeButtonEnabled);
+	EnableOkAndCancelButton(isDataBufferSizeButtonEnabled);
+	m_isClosingWindowEnabled = isDataBufferSizeButtonEnabled;
+}
 void CELISTestServerDlg::ReadConfigFile()
 {
 	CString dataConfigFileName = "dataconfig.ini";//D:\\vc6\\MyProjects\\elis\\ELISTestServer6.3.2
@@ -662,7 +692,7 @@ BOOL CELISTestServerDlg::OnInitDialog()
 	
 	UpdateData(FALSE);
 
-	OnButtonServerPort();
+	OnButtonServerPortConnection();
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -752,7 +782,7 @@ void CELISTestServerDlg::OnSelchangeElistestserverTab(NMHDR* pNMHDR, LRESULT* pR
 	}
 }
 
-void CELISTestServerDlg::OnButtonServerPort() 
+void CELISTestServerDlg::OnButtonServerPortConnection() 
 {
 	// TODO: Add your control notification handler code here
 
@@ -764,7 +794,11 @@ void CELISTestServerDlg::OnButtonServerPort()
 	/*::SendMessage((HWND)m_socketThread->m_hThread, WM_PORT, NULL, 
 	m_dataFileBufSize);*/
 }
-
+void CELISTestServerDlg::OnButtonServerPortDisconnection() 
+{
+	// TODO: Add your control notification handler code here
+	
+}
 void CELISTestServerDlg::OnButtonCalverFolder() 
 {
 	// TODO: Add your control notification handler code here
@@ -788,6 +822,7 @@ void CELISTestServerDlg::OnButtonCalverFolder()
         //AfxMessageBox(_T(str));
 		GetDlgItem(IDC_EDIT_CALVER_FOLDER)->SetWindowText(str);
 		m_calverDataFileRootPath = str;
+		m_cmdHandlerThread->PostThreadMessage(WM_CALVER_DATAFILE_ROOT_PATH, NULL, (LPARAM)(&m_calverDataFileRootPath));
 		/*
 		if (SetAllDataFilePaths(m_myTabCtrl.m_calverDialog->m_calverListCtrl, 1))
 		{
@@ -821,6 +856,7 @@ void CELISTestServerDlg::OnButtonActFolder()
 		GetDlgItem(IDC_EDIT_ACT_FOLDER)->SetWindowText(str);
 		m_actDataFileRootPath = str;
 		SetAllDataFilePaths(m_myTabCtrl.m_actDialog->m_actListCtrl, 0);
+		m_cmdHandlerThread->PostThreadMessage(WM_ACT_DATAFILE_ROOT_PATH, NULL, (LPARAM)(&m_actDataFileRootPath));
 		/*
 		if (SetAllDataFilePaths(m_myTabCtrl.m_actDialog->m_actListCtrl, 0))
 		{
@@ -841,7 +877,7 @@ void CELISTestServerDlg::OnButtonDataBufferSize()
 	GetDlgItem(IDC_EDIT_DATA_BUFFER_SIZE)->GetWindowText(dataFileBufSizeStr);
 	ULONG dataFileBufSize = atol(dataFileBufSizeStr);
 	m_dataFileBufSize = dataFileBufSize*1024*1024;//兆字节转变为字节
-	
+	m_cmdHandlerThread->PostThreadMessage(WM_DATABUF_LEN, NULL, m_dataFileBufSize);
 }
 
 void CELISTestServerDlg::OnRadioImperial() 
@@ -900,25 +936,6 @@ void CELISTestServerDlg::OnButtonStartLog()
 	// TODO: Add your control notification handler code here
 	if (m_speedPM != 0.0)
 	{
-		/*
-		if(m_workMode == RtcSYS_STANDBY_CMD) 
-		{	
-			EnableStartLog(FALSE);
-			EnablePauseLog(TRUE);
-			EnableACTRootFolderSelection(FALSE);
-			
-		} 
-		else if (m_workMode == RtcSYS_RECSTART_CMD)
-		{
-			EnableStartLog(FALSE);
-			EnablePauseLog(TRUE);
-			EnableACTRootFolderSelection(FALSE);
-		} 
-		else
-		{
-			AfxMessageBox(_T("当前状态应为STANDBY或RECSTART!"));
-		}
-		*/
 		switch (m_workMode)
 		{
 		case RtcSYS_RECSTART_CMD:
@@ -926,7 +943,7 @@ void CELISTestServerDlg::OnButtonStartLog()
 		case RtcSYS_STANDBY_CMD:
 			EnableStartLog(FALSE);
 			EnablePauseLog(TRUE);
-			EnableACTRootFolderSelection(FALSE);
+			//EnableACTRootFolderSelection(FALSE);
 			m_cmdHandlerThread->PostThreadMessage(WM_ENABLE_RETURN_SUBSET_DATA, NULL, (LPARAM)TRUE);
 			break;
 		default:
@@ -945,9 +962,21 @@ void CELISTestServerDlg::OnButtonPauseLog()
 	// TODO: Add your control notification handler code here
 	EnableStartLog(TRUE);
 	EnablePauseLog(FALSE);
-	EnableACTRootFolderSelection(TRUE);
+	//EnableACTRootFolderSelection(TRUE);
 	m_cmdHandlerThread->PostThreadMessage(WM_ENABLE_RETURN_SUBSET_DATA, NULL, (LPARAM)FALSE);
 }
 
 
 
+
+
+
+void CELISTestServerDlg::OnClose() 
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_isClosingWindowEnabled)
+	{
+		CDialog::OnClose();
+	}
+	
+}

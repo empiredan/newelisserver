@@ -140,10 +140,10 @@ public:
 	inline void SetDataFilePathOfAllBlocks(CString * filePath){
 		for (ULONG i = 0; i < m_numOfBlocks; i++)
 		{
-			SetDataFilePathOfBlock(i, filePath[i]);
+			SetDataFilePathOfBlock(filePath[i], i);
 		}
 	}
-	inline void SetDataFilePathOfBlock(ULONG i, CString filePath){
+	inline void SetDataFilePathOfBlock(CString filePath = "", ULONG i = 0){
 
 		if (!m_mode)
 		{

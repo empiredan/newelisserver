@@ -33,6 +33,7 @@ public:
 	virtual ~CMyListenSocket();
 	inline void SetSocketThread(CSocketThread* st){
 		m_socketThread = st;
+		m_connectSocket.SetSocketThread(st);
 	}
 	inline void SetCmdHandlerThreadID(DWORD tid){
 		//m_connectSocket.SetCmdHandlerThread(cmdHThread);

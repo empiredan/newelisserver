@@ -13,7 +13,7 @@
 //using namespace std;
 /////////////////////////////////////////////////////////////////////////////
 // CMyConnectSocket command target
-
+class CSocketThread;
 class CMyConnectSocket : public CAsyncSocket
 {
 // Attributes
@@ -22,6 +22,8 @@ private:
 
 	//CCommandHandlerThread * m_cmdHandlerThread;
 	DWORD m_cmdThreadID;
+
+	CSocketThread * m_socketThread;
 
 	//Receiving status
 	UINT m_rcvStatus;
@@ -58,6 +60,9 @@ public:
 
 	}*/
 	virtual ~CMyConnectSocket();
+	inline void SetSocketThread(CSocketThread* st){
+		m_socketThread = st;
+	}
 	inline void SetCmdHandlerThreadID(DWORD tid){
 		//m_cmdHandlerThread = cmdHThread;
 		m_cmdThreadID = tid;

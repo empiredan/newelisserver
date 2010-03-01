@@ -113,6 +113,22 @@ public:
 	inline void PreProcessMasterData(CMasterData *md);
 	inline void ResetCurrentTiming();
 	void WorkModeProc();
+	inline void SetSubsetDataTimer(){
+		::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
+		//m_subsetDataTimerIdentifier = ::SetTimer(NULL, NULL, m_cACTList.GetTimeMSDelta(), (TIMERPROC)TimerProc);
+	}
+	inline void SetDepthDataTimer(){
+		::SetTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);
+		//m_depthDataTimerIdentifier = ::SetTimer(NULL, NULL, DEPTH_DATA_TIMER_INTERVAL, (TIMERPROC)TimerProc);
+	}
+	inline void KillSubsetDataTimer(){
+		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), SUBSET_DATA_TIMER);
+		//::KillTimer(NULL, m_subsetDataTimerIdentifier);
+	}
+	inline void KillDepthDataTimer(){
+		::KillTimer((HWND)(GetMainWnd()->GetSafeHwnd()), DEPTH_DATA_TIMER);
+		//::KillTimer(NULL, m_depthDataTimerIdentifier);
+	}
 	void NetCmd_InitServiceTable();
 	void NetCmd_CalibPara();
 	void NetCmd_CalibStart();
