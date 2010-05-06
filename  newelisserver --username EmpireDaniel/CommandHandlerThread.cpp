@@ -463,7 +463,7 @@ VOID CCommandHandlerThread::OnCommand(WPARAM wParam, LPARAM lParam)
 			break;
 
 		case NET_CMDTYPE_CTRL_RECSTOP:
-			//NetCmd_CtrlRecstop();
+			NetCmd_CtrlRecStop();
 			break;
 
 		case NET_CMDTYPE_CTRL_ACTSWITCH:
@@ -702,27 +702,12 @@ void CCommandHandlerThread::NetCmd_SetStandbyTimeInterval() {
 	dlg->log.Write(logdata, strlen(logdata));
 	dlg->log.Flush();
 }
-
+*/
 void CCommandHandlerThread::NetCmd_CtrlRecStop() {
-	BUF_TYPE *bodyBuf;
-	ULONG bodyLen;
-
-	ULONG *head;
-	ULONG cmdType, totalLen;
-
-	head = (ULONG*)d->buf;
-	cmdType = ntohl(head[0]);
-	totalLen = ntohl(head[1]);
-
-	bodyLen = totalLen - headSize;
-	bodyBuf = d->buf + headSize;
-
-	char logdata[1024];
-	sprintf(logdata, "Implement me!! CCommandHandler::NetCmd_CtrlRecStop\n");
-	dlg->log.Write(logdata, strlen(logdata));
-	dlg->log.Flush();
+	KillSubsetDataTimer();
+	//ResetCurrentTiming();
 }
-
+/*
 void CCommandHandlerThread::NetCmd_CtrlActSwitch() {
 	BUF_TYPE *bodyBuf;
 	ULONG bodyLen;
