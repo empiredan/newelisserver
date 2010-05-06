@@ -974,9 +974,9 @@ void CELISTestServerDlg::OnButtonPauseLog()
 void CELISTestServerDlg::OnClose() 
 {
 	// TODO: Add your message handler code here and/or call default
-	if (m_isClosingWindowEnabled)
-	{
-		CDialog::OnClose();
-	}
+	//if (m_isClosingWindowEnabled)
+	//{
+	CDialog::OnClose();
+	//}
 	
 }
